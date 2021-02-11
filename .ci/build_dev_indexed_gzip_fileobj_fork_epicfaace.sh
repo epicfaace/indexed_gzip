@@ -11,6 +11,6 @@ source $thisdir/activate_env.sh "$envdir"
 
 # enable line tracing for cython
 # modules - see setup.py
-export indexed_gzip_fileobj_fork_epicfaace_TESTING=1
+export INDEXED_GZIP_TESTING=1
 
 python setup.py develop

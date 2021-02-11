@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Setup script for indexed_gzip_fileobj_fork_epicfaace.
 
-If an environment variable called `indexed_gzip_fileobj_fork_epicfaace_TESTING` is defined, the
+If an environment variable called `INDEXED_GZIP_TESTING` is defined, the
 Cython modules are compiled with line-tracing enabled, via the Cython
 `linetrace` directive, and the `CYTHON_TRACE_NOGIL` macro.
 
@@ -78,7 +78,7 @@ class Clean(Command):
 python2   = sys.version_info[0] == 2
 noc99     = python2 or (sys.version_info[0] == 3 and sys.version_info[1] <= 4)
 windows   = sys.platform.startswith("win")
-testing   = 'indexed_gzip_fileobj_fork_epicfaace_TESTING' in os.environ
+testing   = 'INDEXED_GZIP_TESTING' in os.environ
 
 # compile ZLIB source?
 ZLIB_HOME = os.environ.get("ZLIB_HOME", None)
