@@ -31,7 +31,7 @@ from cpython.buffer cimport (PyObject_GetBuffer,
 
 from cpython.ref cimport PyObject
 
-cimport indexed_gzip.zran as zran
+cimport indexed_gzip_fileobj_fork_epicfaace.zran as zran
 
 import io
 import os

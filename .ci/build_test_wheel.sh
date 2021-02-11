@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Builds a binary wheel for indexed_gzip
+# Builds a binary wheel for indexed_gzip_fileobj_fork_epicfaace
 
 set -e
 

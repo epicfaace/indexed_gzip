@@ -1,4 +1,4 @@
-# `indexed_gzip` changelog
+# `indexed_gzip_fileobj_fork_epicfaace` changelog
 
 
 ## 1.4.0 (January 2nd 2021)
@@ -6,7 +6,7 @@
 
 * Fixed a bug in the pickling/copying logic in the `IndexedGzipFile` class
   (#50, #51)
-* New `indexed_gzip.open` function, which just creates and returns an
+* New `indexed_gzip_fileobj_fork_epicfaace.open` function, which just creates and returns an
   `IndexedGzipFile`.
 * When creating an `IndexedGzipFile`, the first argument (`filename`) may
   be either a file name, or an open file handle (#49, #53).
@@ -199,15 +199,15 @@ Changes in this release:
 Changes in this release:
 
 * Unit tests are run on a 32 bit platform
-* The `indexed_gzip` package now has a `__version__` attribute
+* The `indexed_gzip_fileobj_fork_epicfaace` package now has a `__version__` attribute
 
 
 ## 0.5.0 (September 8th 2017)
 
 Changes in this release:
 
-* Re-arranged code layout - there is now a top level `indexed_gzip` package,
-  which contains the `indexed_gzip` module, and the `tests` package. Done so
+* Re-arranged code layout - there is now a top level `indexed_gzip_fileobj_fork_epicfaace` package,
+  which contains the `indexed_gzip_fileobj_fork_epicfaace` module, and the `tests` package. Done so
   that tests can be distributed properly. No API changes though.
 
 * `zran_seek` input parameter types made more specific due to an issue on 32 bit
@@ -276,7 +276,7 @@ Changes in this release:
 
 The following changes have been made in this release:
 
-* `indexed_gzip` now releases the GIL when possible
+* `indexed_gzip_fileobj_fork_epicfaace` now releases the GIL when possible
 * A new `SafeIndexedGzipFile` class provides simple thread-safe file access to
   compressed files.
 * Some initial test coverage using https://travis-ci.org

@@ -9,9 +9,9 @@ import pytest
 
 import nibabel      as nib
 import numpy        as np
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
-from indexed_gzip.tests import tempdir
+from indexed_gzip_fileobj_fork_epicfaace.tests import tempdir
 
 
 pytestmark = pytest.mark.nibabel_test
@@ -49,7 +49,7 @@ def load_image(fname):
 
     basename = op.basename(fname)[:-7]
 
-    # nibabel pre-2.1 is not indexed_gzip-aware
+    # nibabel pre-2.1 is not indexed_gzip_fileobj_fork_epicfaace-aware
     if nibver <= Version('2.1.0'):
         fobj = igzip.IndexedGzipFile(fname)
         fmap = nib.Nifti1Image.make_file_map()
@@ -57,11 +57,11 @@ def load_image(fname):
         image = nib.Nifti1Image.from_file_map(fmap)
 
     # nibabel 2.2.x, we have to set keep_file_open='auto'
-    # to get it to use indexed_gzip
+    # to get it to use indexed_gzip_fileobj_fork_epicfaace
     elif Version('2.2.0') <= nibver < Version('2.3.0'):
         image = nib.load(fname, keep_file_open='auto')
 
-    # nibabel >= 2.3.x uses indexed_gzip automatically
+    # nibabel >= 2.3.x uses indexed_gzip_fileobj_fork_epicfaace automatically
     else:
         image = nib.load(fname)
 
@@ -86,7 +86,7 @@ def test_nibabel_integration():
                               igzip.IndexedGzipFile)
 
 
-# https://github.com/pauldmccarthy/indexed_gzip/issues/40
+# https://github.com/pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace/issues/40
 def test_readdata_twice():
     with tempdir():
         # the bug only occurs on relatively small images,
@@ -102,7 +102,7 @@ def test_readdata_twice():
         assert np.all(np.isclose(data, d2))
 
 
-# https://github.com/pauldmccarthy/indexed_gzip/pull/45
+# https://github.com/pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace/pull/45
 def test_bad_image_error():
 
     if nibver < Version('2.3.0'):

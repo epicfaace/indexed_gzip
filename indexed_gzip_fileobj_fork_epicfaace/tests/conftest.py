@@ -91,7 +91,7 @@ def seed(request):
 @pytest.fixture
 def testfile(request, nelems, concat):
 
-    from indexed_gzip.tests import gen_test_data
+    from indexed_gzip_fileobj_fork_epicfaace.tests import gen_test_data
 
     filename = request.config.getoption('--testfile')
 

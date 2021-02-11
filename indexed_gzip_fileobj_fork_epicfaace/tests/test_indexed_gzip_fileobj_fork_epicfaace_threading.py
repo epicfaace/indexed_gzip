@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# test_indexed_gzip_threading.py -
+# test_indexed_gzip_fileobj_fork_epicfaace_threading.py -
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -16,11 +16,11 @@ import numpy as np
 
 import pytest
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 from . import check_data_valid
 
-pytestmark = pytest.mark.indexed_gzip_test
+pytestmark = pytest.mark.indexed_gzip_fileobj_fork_epicfaace_test
 
 
 def test_IndexedGzipFile_open_close(testfile, nelems, concat):

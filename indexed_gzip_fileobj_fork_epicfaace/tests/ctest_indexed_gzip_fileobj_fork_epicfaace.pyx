@@ -1,5 +1,5 @@
 #
-# Tests for the indexed_gzip module.
+# Tests for the indexed_gzip_fileobj_fork_epicfaace module.
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -28,7 +28,7 @@ import numpy as np
 from io import BytesIO
 import pytest
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 from . import gen_test_data
 from . import check_data_valid

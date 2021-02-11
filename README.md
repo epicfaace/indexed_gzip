@@ -1,7 +1,7 @@
-# indexed_gzip
+# indexed_gzip_fileobj_fork_epicfaace
 
 
-[![PyPi version](https://img.shields.io/pypi/v/indexed_gzip.svg)](https://pypi.python.org/pypi/indexed_gzip/) [![Anaconda version](https://anaconda.org/conda-forge/indexed_gzip/badges/version.svg)](https://anaconda.org/conda-forge/indexed_gzip/)![Test status](https://github.com/pauldmccarthy/indexed_gzip/workflows/master.yaml/badge.svg)
+[![PyPi version](https://img.shields.io/pypi/v/indexed_gzip_fileobj_fork_epicfaace.svg)](https://pypi.python.org/pypi/indexed_gzip_fileobj_fork_epicfaace/) [![Anaconda version](https://anaconda.org/conda-forge/indexed_gzip_fileobj_fork_epicfaace/badges/version.svg)](https://anaconda.org/conda-forge/indexed_gzip_fileobj_fork_epicfaace/)![Test status](https://github.com/pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace/workflows/master.yaml/badge.svg)
 
 
  *Fast random access of gzip files in Python*
@@ -21,15 +21,15 @@
 ## Overview
 
 
-The `indexed_gzip` project is a Python extension which aims to provide a
+The `indexed_gzip_fileobj_fork_epicfaace` project is a Python extension which aims to provide a
 drop-in replacement for the built-in Python `gzip.GzipFile` class, the
 `IndexedGzipFile`.
 
 
-`indexed_gzip` was written to allow fast random access of compressed
+`indexed_gzip_fileobj_fork_epicfaace` was written to allow fast random access of compressed
 [NIFTI](http://nifti.nimh.nih.gov/) image files (for which GZIP is the
 de-facto compression standard), but will work with any GZIP file.
-`indexed_gzip` is easy to use with `nibabel` (http://nipy.org/nibabel/).
+`indexed_gzip_fileobj_fork_epicfaace` is easy to use with `nibabel` (http://nipy.org/nibabel/).
 
 
 The standard `gzip.GzipFile` class exposes a random access-like interface (via
@@ -51,8 +51,8 @@ in the file.
 ## Intended use
 
 
-You may find `indexed_gzip` useful if you need to read from large GZIP files.
-A major advantage of `indexed_gzip` is that it will work with any GZIP file.
+You may find `indexed_gzip_fileobj_fork_epicfaace` useful if you need to read from large GZIP files.
+A major advantage of `indexed_gzip_fileobj_fork_epicfaace` is that it will work with any GZIP file.
 However, if you have control over the creation of your GZIP files, you may
 wish to consider some alternatives:
 
@@ -65,20 +65,20 @@ wish to consider some alternatives:
 ## Installation
 
 
-`indexed_gzip` is available on [PyPi](https://pypi.python.org/pypi) - to
+`indexed_gzip_fileobj_fork_epicfaace` is available on [PyPi](https://pypi.python.org/pypi) - to
 install, simply type:
 ```sh
-pip install indexed_gzip
+pip install indexed_gzip_fileobj_fork_epicfaace
 ```
 
 
-You can also install `indexed_gzip` from conda-forge:
+You can also install `indexed_gzip_fileobj_fork_epicfaace` from conda-forge:
 
 ```sh
-conda install -c conda-forge indexed_gzip
+conda install -c conda-forge indexed_gzip_fileobj_fork_epicfaace
 ```
 
-To compile `indexed_gzip`, make sure you have [cython](http://cython.org/)
+To compile `indexed_gzip_fileobj_fork_epicfaace`, make sure you have [cython](http://cython.org/)
 installed (and `numpy` if you want to compile the tests), and then run:
 ```sh
 python setup.py develop
@@ -89,17 +89,17 @@ To run the tests, type the following; you will need `numpy`, `nibabel`,
 `pytest`, `pytest-cov`, and `coverage` installed:
 
 ```sh
-python -m indexed_gzip.tests
+python -m indexed_gzip_fileobj_fork_epicfaace.tests
 ```
 
 ## Usage
 
 
-You can use the `indexed_gzip` module directly:
+You can use the `indexed_gzip_fileobj_fork_epicfaace` module directly:
 
 
 ```python
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 # You can create an IndexedGzipFile instance
 # by specifying a file name, or an open file
@@ -121,8 +121,8 @@ data = myfile.read(1048576)
 ## Using with `nibabel`
 
 
-You can use `indexed_gzip` with `nibabel`. `nibabel` >= 2.3.0 will
-automatically use `indexed_gzip` if it is present:
+You can use `indexed_gzip_fileobj_fork_epicfaace` with `nibabel`. `nibabel` >= 2.3.0 will
+automatically use `indexed_gzip_fileobj_fork_epicfaace` if it is present:
 
 
 ```python
@@ -143,13 +143,13 @@ image = nib.load('big_image.nii.gz', keep_file_open='auto')
 ```
 
 
-To use `indexed_gzip` with `nibabel` 2.1.0 or older, you need to do a little
+To use `indexed_gzip_fileobj_fork_epicfaace` with `nibabel` 2.1.0 or older, you need to do a little
 more work:
 
 
 ```python
 import nibabel      as nib
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 # Here we are using 4MB spacing between
 # seek points, and using a larger read
@@ -180,7 +180,7 @@ save it out to an index file:
 
 
 ```python
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 # Load the file, pre-generate the
 # index, and save it out to disk.
@@ -202,7 +202,7 @@ fobj = igzip.IndexedGzipFile('big_file.gz', index_file='big_file.gzidx')
 ## Write support
 
 
-`indexed_gzip` does not currently have any support for writing. Currently if you
+`indexed_gzip_fileobj_fork_epicfaace` does not currently have any support for writing. Currently if you
 wish to write to a file, you will need to save the file by alternate means (e.g.
 via `gzip` or `nibabel`), and then re-create a new `IndexedGzipFile` instance.
 For example:
@@ -230,8 +230,8 @@ image = nib.load('big_image.nii.gz')
 ## Performance
 
 
-A small [test script](indexed_gzip/tests/benchmark.py) is included with
-`indexed_gzip`; this script compares the performance of the `IndexedGzipFile`
+A small [test script](indexed_gzip_fileobj_fork_epicfaace/tests/benchmark.py) is included with
+`indexed_gzip_fileobj_fork_epicfaace`; this script compares the performance of the `IndexedGzipFile`
 class with the `gzip.GzipFile` class. This script does the following:
 
   1. Generates a test file.
@@ -254,11 +254,11 @@ sizes, with 500 seeks:
 ## Acknowledgements
 
 
-The `indexed_gzip` project is based upon the `zran.c` example (written by Mark
+The `indexed_gzip_fileobj_fork_epicfaace` project is based upon the `zran.c` example (written by Mark
 Alder) which ships with the [zlib](http://www.zlib.net/) source code.
 
 
-`indexed_gzip` was originally inspired by Zalan Rajna's (@zrajna)
+`indexed_gzip_fileobj_fork_epicfaace` was originally inspired by Zalan Rajna's (@zrajna)
 [zindex](https://github.com/zrajna/zindex) project:
 
     Z. Rajna, A. Keskinarkaus, V. Kiviniemi and T. Seppanen
@@ -269,7 +269,7 @@ Alder) which ships with the [zlib](http://www.zlib.net/) source code.
     https://sourceforge.net/projects/libznzwithzindex/
 
 
-Initial work on `indexed_gzip` took place at
+Initial work on `indexed_gzip_fileobj_fork_epicfaace` took place at
 [Brainhack](http://www.brainhack.org/) Paris, at the Institut Pasteur,
 24th-26th February 2016, with the support of the
 [FMRIB Centre](https://www.ndcn.ox.ac.uk/divisions/fmrib/), at the
@@ -279,7 +279,7 @@ University of Oxford, UK.
 Many thanks to the following contributors (listed chronologically):
 
  - Zalan Rajna (@zrajna): bug fixes (#2)
- - Martin Craig (@mcraig-ibme): porting `indexed_gzip` to Windows (#3)
+ - Martin Craig (@mcraig-ibme): porting `indexed_gzip_fileobj_fork_epicfaace` to Windows (#3)
  - Chris Markiewicz (@effigies): Option to drop file handles (#6)
  - Omer Ozarslan (@ozars): Index import/export (#8)
  - @DarioDaF: Windows overflow bug (#30)
@@ -290,5 +290,5 @@ Many thanks to the following contributors (listed chronologically):
 ## License
 
 
-`indexed_gzip` inherits the [zlib](http://www.zlib.net) license, available for
+`indexed_gzip_fileobj_fork_epicfaace` inherits the [zlib](http://www.zlib.net) license, available for
 perusal in the [LICENSE](LICENSE) file.
