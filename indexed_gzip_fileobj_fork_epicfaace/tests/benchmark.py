@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# benchmark.py - benchmark indexed_gzip
+# benchmark.py - benchmark indexed_gzip_fileobj_fork_epicfaace
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -21,7 +21,7 @@ import            contextlib
 
 import numpy as np
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 
 @contextlib.contextmanager
@@ -50,7 +50,7 @@ def gen_file(fname, nbytes):
 
     nelems = int(nbytes / 4)
 
-    data = np.random.randint(0, 2 ** 32, nelems, dtype=np.uint32)
+    data = np.random.randint(0, 2 ** 8, nelems, dtype=np.uint32)
 
     # zero out 10% so there is something to compress
     zeros = np.random.randint(0, nelems, int(nelems / 10.0))
@@ -92,7 +92,7 @@ def benchmark(filename, nseeks):
 
     nbytes = size(filename)
     seeks  = np.linspace(0, nbytes, nseeks, dtype=np.int)
-    lens   = np.random.randint(1048576, 16777216, nseeks)
+    lens   = np.random.randint(10485, 167772, nseeks)
 
     np.random.shuffle(seeks)
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                         type=int,
                         help='Uncompressed size of test file in bytes. '
                              'Ignored if a --file is specified',
-                        default=16777216)
+                        default=167772)
     parser.add_argument('-s',
                         '--seeks',
                         type=int,

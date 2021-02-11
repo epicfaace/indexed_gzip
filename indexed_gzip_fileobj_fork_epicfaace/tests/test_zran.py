@@ -21,6 +21,7 @@ if not sys.platform.startswith("win"):
     pytestmark = pytest.mark.zran_test
 
 
+    def test_file_funcs(            testfile):                                 ctest_zran.test_file_funcs(                  testfile)
     def test_init(                  testfile):                                 ctest_zran.test_init(                  testfile)
     def test_init_file_modes(       testfile):                                 ctest_zran.test_init_file_modes(       testfile)
     def test_no_auto_build(         testfile, nelems):                         ctest_zran.test_no_auto_build(         testfile, nelems)

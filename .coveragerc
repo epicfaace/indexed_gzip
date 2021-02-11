@@ -2,6 +2,6 @@
 plugins     = Cython.Coverage
 concurrency = thread multiprocessing
 parallel    = True
-source      = indexed_gzip
+source      = indexed_gzip_fileobj_fork_epicfaace
 omit        =
-    indexed_gzip/tests/*
+    indexed_gzip_fileobj_fork_epicfaace/tests/*

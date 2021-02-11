@@ -17,7 +17,7 @@ def pytest_addoption(parser):
     parser.addoption('--nelems',
                      type=str,
                      action='store',
-                     default='rnd_16777217',
+                     default='rnd_167772',
                      help='Number of uint64 elements for test data')
 
     parser.addoption('--concat',
@@ -91,7 +91,7 @@ def seed(request):
 @pytest.fixture
 def testfile(request, nelems, concat):
 
-    from indexed_gzip.tests import gen_test_data
+    from indexed_gzip_fileobj_fork_epicfaace.tests import gen_test_data
 
     filename = request.config.getoption('--testfile')
 

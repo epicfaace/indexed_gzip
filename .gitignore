@@ -1,0 +1,10 @@
+*.gz
+build
+*.egg-info
+test.env
+__pycache__
+*.so
+*.pyc
+indexed_gzip_fileobj_fork_epicfaace.c
+ctest_*.c
+.DS_Store

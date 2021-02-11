@@ -7,7 +7,7 @@ export CIBW_BEFORE_BUILD="pip install cython numpy"
 # Make sure zlib headers are available on linux
 export CIBW_BEFORE_ALL_LINUX="yum install -y zlib-devel"
 
-# ZLIB is compiled into indexed_gzip on windwos -
+# ZLIB is compiled into indexed_gzip_fileobj_fork_epicfaace on windwos -
 # see .ci/download_zlib.sh and setup.py
 export CIBW_ENVIRONMENT_WINDOWS="ZLIB_HOME='$ZLIB_HOME'"
 
@@ -16,7 +16,7 @@ export CIBW_ENVIRONMENT_WINDOWS="ZLIB_HOME='$ZLIB_HOME'"
 export CIBW_TEST_REQUIRES="cython pytest pytest-cov coverage numpy nibabel"
 
 # Disable pypy builds
-export CIBW_SKIP="pp*"
+export CIBW_SKIP="pp* cp27-*"
 
 # Pytest makes it *very* awkward to run tests
 # from an installed package, and still find/
@@ -26,7 +26,7 @@ export CIBW_SKIP="pp*"
 # correctly.
 echo '#!/usr/bin/env bash'                                                   >  testcmd
 echo 'cp $1/.coveragerc $1/setup.cfg .'                                      >> testcmd
-echo 'python -m indexed_gzip.tests -c setup.cfg -m "not slow_test" --no-cov' >> testcmd
+echo 'python -m indexed_gzip_fileobj_fork_epicfaace.tests -c setup.cfg -m "not slow_test" --no-cov' >> testcmd
 chmod a+x testcmd
 
 export CIBW_TEST_COMMAND="bash {project}/testcmd {project}"

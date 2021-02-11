@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run indexed_gzip unit tests. Assumes that
+# Run indexed_gzip_fileobj_fork_epicfaace unit tests. Assumes that
 # python setup.py develop has been run.
 
 set -e
@@ -33,7 +33,7 @@ if [[ "$PLATFORM" == "windows"* ]]; then
   EXTRA_ARGS="$EXTRA_ARGS --no-cov"
 fi
 
-python -m indexed_gzip.tests      \
+python -m indexed_gzip_fileobj_fork_epicfaace.tests      \
        -c setup.cfg               \
        --cov-config=./.coveragerc \
        -v -s                      \

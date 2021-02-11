@@ -1,4 +1,4 @@
-# This workflow runs the full set of of indexed_gzip
+# This workflow runs the full set of of indexed_gzip_fileobj_fork_epicfaace
 # unit tests on a range of different versions of Python,
 # and on different operating systems and architectures.
 # It is run on pushes to the master branch.
@@ -18,7 +18,7 @@ defaults:
 jobs:
 
   # Quick tests run on all OSes/python versions
-  test-indexed_gzip:
+  test-indexed_gzip_fileobj_fork_epicfaace:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -53,49 +53,49 @@ jobs:
       - name: Download zlib
         if:   ${{ matrix.os == 'windows-latest' }}
         run:  bash ./.ci/download_zlib.sh
-      - name: Build indexed_gzip
-        run:  bash ./.ci/build_dev_indexed_gzip.sh "$ENV_DIR"
+      - name: Build indexed_gzip_fileobj_fork_epicfaace
+        run:  bash ./.ci/build_dev_indexed_gzip_fileobj_fork_epicfaace.sh "$ENV_DIR"
       - name: Run tests
         run:  bash  ./.ci/run_tests.sh "$ENV_DIR"
 
 
-  # Slow indexed_gzip tests run on all OSes
-  test-indexed_gzip-slow:
+  # Slow indexed_gzip_fileobj_fork_epicfaace tests run on all OSes
+  test-indexed_gzip_fileobj_fork_epicfaace-slow:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
          - os:         "windows-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: ""
          - os:         "macos-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: ""
          - os:         "ubuntu-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: ""
            nelems:     ""
          - os:         "windows-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: "--concat"
            nelems:     ""
          - os:         "macos-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: "--concat"
            nelems:     ""
          - os:         "ubuntu-latest"
-           test-suite: "indexed_gzip_test and slow_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test and slow_test"
            extra-args: "--concat"
            nelems:     ""
          # mmap test errors under windos (I think because
          # memory needs to be alliocated for the mmap, but
          # there's not enough RAM)
          - os:         "macos-latest"
-           test-suite: "indexed_gzip_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test"
            extra-args: "--use_mmap"
            nelems:     "805306368"
          - os:         "ubuntu-latest"
-           test-suite: "indexed_gzip_test"
+           test-suite: "indexed_gzip_fileobj_fork_epicfaace_test"
            extra-args: "--use_mmap"
            nelems:     "805306368"
 
@@ -124,51 +124,51 @@ jobs:
       - name: Download zlib
         if:   ${{ matrix.os == 'windows-latest' }}
         run:  bash ./.ci/download_zlib.sh
-      - name: Build indexed_gzip
-        run:  bash ./.ci/build_dev_indexed_gzip.sh "$ENV_DIR"
+      - name: Build indexed_gzip_fileobj_fork_epicfaace
+        run:  bash ./.ci/build_dev_indexed_gzip_fileobj_fork_epicfaace.sh "$ENV_DIR"
       - name: Run tests
         run:  bash  ./.ci/run_tests.sh "$ENV_DIR"
 
 
   # Nibabel integration run on all OSes,
   # and different versions of nibabel
-  test-nibabel-integration:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:      ["ubuntu-latest", "macos-latest", "windows-latest"]
-        nibabel: ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "3.0", "3.1"]
-    env:
-      PLATFORM:       ${{ matrix.os }}
-      PYTHON_VERSION: 3.7
-      TEST_SUITE:     nibabel_test
-      NIBABEL:        ${{ matrix.nibabel }}
-      # earlier versions of nibabel require
-      # an older version of numpy
-      NUMPY:          ${{ (matrix.nibabel <= 2.3) && '1.17' || '' }}
-      ENV_DIR:        ./test.env
+  # test-nibabel-integration:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os:      ["ubuntu-latest", "macos-latest", "windows-latest"]
+  #       nibabel: ["2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "3.0", "3.1"]
+  #   env:
+  #     PLATFORM:       ${{ matrix.os }}
+  #     PYTHON_VERSION: 3.7
+  #     TEST_SUITE:     nibabel_test
+  #     NIBABEL:        ${{ matrix.nibabel }}
+  #     # earlier versions of nibabel require
+  #     # an older version of numpy
+  #     NUMPY:          ${{ (matrix.nibabel <= 2.3) && '1.17' || '' }}
+  #     ENV_DIR:        ./test.env
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-          architecture:   x64
-      - name: Create test environment
-        run:  bash ./.ci/create_test_env.sh "$ENV_DIR"
-      - name: Log test environment
-        run: |
-          source ./.ci/activate_env.sh "$ENV_DIR"
-          python -V
-          pip freeze
-      - name: Download zlib
-        if:   ${{ matrix.os == 'windows-latest' }}
-        run:  bash ./.ci/download_zlib.sh
-      - name: Build indexed_gzip
-        run:  bash ./.ci/build_dev_indexed_gzip.sh "$ENV_DIR"
-      - name: Run tests
-        run:  bash  ./.ci/run_tests.sh "$ENV_DIR"
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.7
+  #         architecture:   x64
+  #     - name: Create test environment
+  #       run:  bash ./.ci/create_test_env.sh "$ENV_DIR"
+  #     - name: Log test environment
+  #       run: |
+  #         source ./.ci/activate_env.sh "$ENV_DIR"
+  #         python -V
+  #         pip freeze
+  #     - name: Download zlib
+  #       if:   ${{ matrix.os == 'windows-latest' }}
+  #       run:  bash ./.ci/download_zlib.sh
+  #     - name: Build indexed_gzip_fileobj_fork_epicfaace
+  #       run:  bash ./.ci/build_dev_indexed_gzip_fileobj_fork_epicfaace.sh "$ENV_DIR"
+  #     - name: Run tests
+  #       run:  bash  ./.ci/run_tests.sh "$ENV_DIR"
 
   # zran tests run only on ubuntu
   test-zran:
@@ -273,7 +273,7 @@ jobs:
           source ./.ci/activate_env.sh "$ENV_DIR"
           python -V
           pip freeze
-      - name: Build indexed_gzip
-        run:  bash ./.ci/build_dev_indexed_gzip.sh "$ENV_DIR"
+      - name: Build indexed_gzip_fileobj_fork_epicfaace
+        run:  bash ./.ci/build_dev_indexed_gzip_fileobj_fork_epicfaace.sh "$ENV_DIR"
       - name: Run tests
         run:  bash  ./.ci/run_tests.sh "$ENV_DIR"

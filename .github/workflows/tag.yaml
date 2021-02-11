@@ -1,5 +1,5 @@
 # This workflow does a test build of binary wheels for
-# indexed_gzip, for different platforms, and for python
+# indexed_gzip_fileobj_fork_epicfaace, for different platforms, and for python
 # 2.7 and 3.7. It is run on new tags.
 
 on:
@@ -62,5 +62,5 @@ jobs:
       - name: Download zlib
         if:   ${{ matrix.os == 'windows-latest' }}
         run:  bash ./.ci/download_zlib.sh
-      - name: Build indexed_gzip
+      - name: Build indexed_gzip_fileobj_fork_epicfaace
         run:  bash ./.ci/build_test_wheel.sh "$ENV_DIR"

@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
 
 struct _zran_index;
 struct _zran_point;
@@ -38,9 +40,9 @@ enum {
 struct _zran_index {
 
     /*
-     * Handle to the compressed file.
+     * Handle to the compressed file object.
      */
-    FILE         *fd;
+    PyObject     *f;
 
     /*
      * Size of the compressed file. This
@@ -177,6 +179,15 @@ struct _zran_point {
 };
 
 
+size_t _fread_python(void *ptr, size_t size, size_t nmemb, PyObject *f);
+long int _ftell_python(PyObject *f);
+int _fseek_python(PyObject *f, long int offset, int whence);
+int _feof_python(PyObject *f, int64_t size);
+int _ferror_python(PyObject *f);
+int _fflush_python(PyObject *f);
+size_t _fwrite_python(const void *ptr, size_t size, size_t nmemb, PyObject *f);
+int _getc_python(PyObject *f);
+
 /*
  * Initialise a zran_index_t struct for use with the given file.
  *
@@ -193,7 +204,7 @@ struct _zran_point {
  */
 int  zran_init(
   zran_index_t *index,        /* The index                          */
-  FILE         *fd,           /* Open handle to the compressed file */
+  PyObject     *f,            /* Open handle to the compressed file object  */
   uint32_t      spacing,      /* Distance in bytes between
                                  index seek points                  */
   uint32_t      window_size,  /* Number of uncompressed bytes
@@ -360,7 +371,7 @@ enum {
  */
 int zran_export_index(
   zran_index_t  *index, /* The index                  */
-  FILE          *fd     /* Open handle to export file */
+  PyObject      *f     /* Open handle to export file object */
 );
 
 /* Return codes for zran_import_index. */
@@ -410,7 +421,7 @@ enum {
  */
 int zran_import_index(
   zran_index_t  *index, /* The index                  */
-  FILE          *fd     /* Open handle to import file */
+  PyObject      *f     /* Open handle to export file object */
 );
 
 #endif /* __ZRAN_H__ */

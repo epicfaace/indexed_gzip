@@ -7,12 +7,13 @@
 from libc.stdio  cimport FILE
 from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t, int64_t
 from posix.types cimport off_t
+from cpython.ref cimport PyObject
 
 
 cdef extern from "zran.h":
 
     ctypedef struct zran_index_t:
-        FILE         *fd;
+        PyObject     *f;
         size_t        compressed_size;
         size_t        uncompressed_size;
         uint32_t      spacing;
@@ -52,8 +53,17 @@ cdef extern from "zran.h":
         ZRAN_IMPORT_MEMORY_ERROR   = -6,
         ZRAN_IMPORT_UNKNOWN_FORMAT = -7
 
+    size_t _fread_python(void *ptr, size_t size, size_t nmemb, PyObject *f)
+    long int _ftell_python(PyObject *f)
+    int _fseek_python(PyObject *f, long int offset, int whence)
+    int _feof_python(PyObject *f, int64_t size)
+    int _ferror_python(PyObject *f)
+    int _fflush_python(PyObject *f)
+    size_t _fwrite_python(const void *ptr, size_t size, size_t nmemb, PyObject *f)
+    int _getc_python(PyObject *f)
+
     bint zran_init(zran_index_t *index,
-                   FILE         *fd,
+                   PyObject     *f,
                    uint32_t      spacing,
                    uint32_t      window_size,
                    uint32_t      readbuf_size,
@@ -77,7 +87,7 @@ cdef extern from "zran.h":
                       uint64_t      len) nogil;
 
     int zran_export_index(zran_index_t *index,
-                          FILE         *fd);
+                          PyObject     *f);
 
     int zran_import_index(zran_index_t *index,
-                          FILE         *fd);
+                          PyObject     *f);

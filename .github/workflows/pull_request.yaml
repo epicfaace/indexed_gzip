@@ -1,4 +1,4 @@
-# This workflow runs a small set of indexed_gzip unit
+# This workflow runs a small set of indexed_gzip_fileobj_fork_epicfaace unit
 # tests on a range of different versions of Python.
 # It is run on pull requests.
 
@@ -44,7 +44,7 @@ jobs:
       - name: Download zlib
         if:   ${{ matrix.os == 'windows-latest' }}
         run:  bash ./.ci/download_zlib.sh
-      - name: Build indexed_gzip
-        run:  bash ./.ci/build_dev_indexed_gzip.sh "$ENV_DIR"
+      - name: Build indexed_gzip_fileobj_fork_epicfaace
+        run:  bash ./.ci/build_dev_indexed_gzip_fileobj_fork_epicfaace.sh "$ENV_DIR"
       - name: Run tests
         run:  bash  ./.ci/run_tests.sh "$ENV_DIR"
