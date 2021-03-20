@@ -113,7 +113,8 @@ int _fseek_python(PyObject *f, int64_t offset, int whence) {
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
 
     // We can't use PyObject_CallMethod with multiple arguments
-    // because it causes tests with 32-bit OS wheels to fail,
+    // because it causes tests with 32-bit OS wheels to fail
+    // (as the second argument is not passed correctly to Python),
     // so we have to manually build up the arguments instead.
     // TODO: File an issue with cpython about this.
     // if ((data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence)) == NULL)
