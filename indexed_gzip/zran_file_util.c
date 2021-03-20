@@ -106,19 +106,27 @@ fail:
 int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     PyObject *data;
+    PyObject *args;
+    // PyObject *whence;
+    // PyObject *offset;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
+    // PyLong_FromLong()
+    // PyTuple_Pack()
+    args = Py_BuildValue("ll", whence, offset);
     printf("\nwhence is %lld, offset is %lld\n", whence, offset);
     data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
     if (data == NULL)
         goto fail;
 
     Py_DECREF(data);
+    Py_DECREF(args);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return 0;
 
 fail:
     Py_XDECREF(data);
+    Py_XDECREF(args);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return -1;
 }
