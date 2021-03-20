@@ -116,7 +116,7 @@ int _fseek_python(PyObject *f, int64_t offset, int whence) {
     // because it causes tests with 32-bit OS wheels to fail,
     // so we have to manually build up the arguments instead.
     // TODO: File an issue with cpython about this.
-    if (data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence)) == NULL)
+    if ((data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence)) == NULL)
         goto fail;
     // if ((seek_fn_name = PyUnicode_FromString("seek")) == NULL)
     //     goto fail;
