@@ -56,7 +56,6 @@ def nelems(request):
             var        = (np.random.random() - 0.5) * val * 0.4
             val        = round(val + var)
             nelems.val = val
-    return 13437554
     return int(val)
 
 
