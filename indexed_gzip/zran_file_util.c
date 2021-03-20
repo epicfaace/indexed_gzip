@@ -116,7 +116,8 @@ int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
     offset_ = PyLong_FromLong(offset);
     args = PyTuple_Pack(2, whence_, offset_);
     printf("\nwhence is %lld, offset is %lld\n", whence, offset);
-    data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
+    // data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
+    data = PyObject_CallMethod(f, "seek", "ll", args);
     if (data == NULL)
         goto fail;
 
