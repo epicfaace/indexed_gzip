@@ -4,8 +4,6 @@
 # Numpy is required to build the test modules
 export CIBW_BEFORE_BUILD="pip install cython numpy"
 
-export CIBW_BUILD_VERBOSITY="3"
-
 # Make sure zlib headers are available on linux
 export CIBW_BEFORE_ALL_LINUX="yum install -y zlib-devel"
 
