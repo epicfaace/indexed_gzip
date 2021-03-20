@@ -266,18 +266,18 @@ def test_fseek():
 
     f = BytesIO(b"abc")
     zran_file_util._fseek_python(<PyObject*>f, 1, SEEK_SET)
-    assert f.tell() == 1
+    assert f.tell() == 1, "nope 269"
     zran_file_util._fseek_python(<PyObject*>f, -1, SEEK_END)
-    assert f.tell() == 2
+    assert f.tell() == 2, "nope 271"
     zran_file_util._fseek_python(<PyObject*>f, 100, SEEK_SET)
-    assert f.tell() == 100
-    assert zran_file_util._ferror_python(<PyObject*>f) == 0
+    assert f.tell() == 100, "nope 273"
+    assert zran_file_util._ferror_python(<PyObject*>f) == 0, "nope 274"
 
     # fseek error conditions
     for fn in [error_fn]:
         f.seek = fn
-        assert zran_file_util._fseek_python(<PyObject*>f, 1, SEEK_SET) == -1
-        assert zran_file_util._ferror_python(<PyObject*>f) == 1
+        assert zran_file_util._fseek_python(<PyObject*>f, 1, SEEK_SET) == -1, "nope 279"
+        assert zran_file_util._ferror_python(<PyObject*>f) == 1, "nope 280"
         PyErr_Clear()
 
 
