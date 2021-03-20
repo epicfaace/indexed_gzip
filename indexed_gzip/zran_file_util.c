@@ -137,7 +137,7 @@ int _feof_python(PyObject *f, size_t f_ret) {
  * file-like objects.
  */
 int _ferror_python(PyObject *f) {
-    int result;
+    PyObject *result;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
     result = PyErr_Occurred();
