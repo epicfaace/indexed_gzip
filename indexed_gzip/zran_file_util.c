@@ -111,14 +111,16 @@ int _fseek_python(PyObject *f, int64_t offset, int whence) {
     PyObject *offset_ = NULL;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
+
+    // We can't use PyObject_CallMethod because of an issue
+    // with building wheels on 32-bit OSes, so we have to
+    // manually build up the arguments instead.
     if ((seek_fn_name = PyUnicode_FromString("seek")) == NULL)
         goto fail;
     if ((whence_ = PyLong_FromLong(whence)) == NULL)
         goto fail;
     if ((offset_ = PyLong_FromLong(offset)) == NULL)
         goto fail;
-    // We can't use PyObject_CallMethod because of an issue
-    // with building wheels on 32-bit OSes.
     if ((data = PyObject_CallMethodObjArgs(f, seek_fn_name, offset_, whence_, NULL)) == NULL)
         goto fail;
 
