@@ -107,13 +107,14 @@ int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     PyObject *data;
     PyObject *args;
-    // PyObject *whence;
-    // PyObject *offset;
+    PyObject *whence_;
+    PyObject *offset_;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
-    // PyLong_FromLong()
-    // PyTuple_Pack()
-    args = Py_BuildValue("ll", whence, offset);
+    // args = Py_BuildValue("ll", whence, offset);
+    whence_ = PyLong_FromLong(whence);
+    offset_ = PyLong_FromLong(offset);
+    args = PyTuple_Pack(2, whence, offset);
     printf("\nwhence is %lld, offset is %lld\n", whence, offset);
     data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
     if (data == NULL)
@@ -121,12 +122,16 @@ int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     Py_DECREF(data);
     Py_DECREF(args);
+    Py_DECREF(whence_);
+    Py_DECREF(offset_);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return 0;
 
 fail:
     Py_XDECREF(data);
     Py_XDECREF(args);
+    Py_XDECREF(whence_);
+    Py_XDECREF(offset_);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return -1;
 }
