@@ -46,7 +46,7 @@
  */
 size_t _fread_python(void *ptr, size_t size, size_t nmemb, PyObject *f) {
 
-    PyObject  *data;
+    PyObject  *data = NULL;
     char      *buf;
     Py_ssize_t len;
 
@@ -76,7 +76,7 @@ fail:
  * file-like objects.
  */
 int64_t _ftell_python(PyObject *f) {
-    PyObject *data;
+    PyObject *data = NULL;
     int64_t   result;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
@@ -105,20 +105,37 @@ fail:
  */
 int _fseek_python(PyObject *f, int64_t offset, int whence) {
 
-    PyObject *data;
+    PyObject *data = NULL;
+    PyObject *seek_fn_name = NULL;
+    PyObject *whence_ = NULL;
+    PyObject *offset_ = NULL;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
 
-    data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence);
-    if (data == NULL)
+    // We can't use PyObject_CallMethod because of an issue
+    // with building wheels on 32-bit OSes, so we have to
+    // manually build up the arguments instead.
+    if ((seek_fn_name = PyUnicode_FromString("seek")) == NULL)
+        goto fail;
+    if ((whence_ = PyLong_FromLong(whence)) == NULL)
+        goto fail;
+    if ((offset_ = PyLong_FromLong(offset)) == NULL)
+        goto fail;
+    if ((data = PyObject_CallMethodObjArgs(f, seek_fn_name, offset_, whence_, NULL)) == NULL)
         goto fail;
 
     Py_DECREF(data);
+    Py_DECREF(seek_fn_name);
+    Py_DECREF(whence_);
+    Py_DECREF(offset_);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return 0;
 
 fail:
     Py_XDECREF(data);
+    Py_XDECREF(seek_fn_name);
+    Py_XDECREF(whence_);
+    Py_XDECREF(offset_);
     _ZRAN_FILE_UTIL_RELEASE_GIL
     return -1;
 }
@@ -137,7 +154,7 @@ int _feof_python(PyObject *f, size_t f_ret) {
  * file-like objects.
  */
 int _ferror_python(PyObject *f) {
-    int result;
+    PyObject *result = NULL;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
     result = PyErr_Occurred();
@@ -152,7 +169,7 @@ int _ferror_python(PyObject *f) {
  * file-like objects.
  */
 int _fflush_python(PyObject *f) {
-    PyObject *data;
+    PyObject *data = NULL;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
     if ((data = PyObject_CallMethod(f, "flush", NULL)) == NULL) goto fail;
@@ -176,7 +193,7 @@ size_t _fwrite_python(const void *ptr,
                       size_t      nmemb,
                       PyObject   *f) {
 
-    PyObject *input;
+    PyObject *input = NULL;
     PyObject *data = NULL;
     long      len;
 
