@@ -112,13 +112,16 @@ int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
     // args = Py_BuildValue("ll", whence, offset);
-    seek_fn_name = PyUnicode_FromString("seek");
-    whence_ = PyLong_FromLong(whence);
-    offset_ = PyLong_FromLong(offset);
+    if ((seek_fn_name = PyUnicode_FromString("seek")) == NULL)
+        goto fail;
+    if ((whence_ = PyLong_FromLong(whence)) == NULL)
+        goto fail;
+    if ((offset_ = PyLong_FromLong(offset)) == NULL)
+        goto fail;
     // args = PyTuple_Pack(2, whence_, offset_);
     printf("\nwhence is %lld, offset is %lld\n", whence, offset);
     // data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
-    data = PyObject_CallMethodObjArgs(f, seek_fn_name, whence_, offset_);
+    data = PyObject_CallMethodObjArgs(f, seek_fn_name, whence_, offset_, NULL);
     if (data == NULL)
         goto fail;
 
