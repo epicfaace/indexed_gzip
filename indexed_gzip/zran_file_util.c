@@ -117,9 +117,9 @@ int _fseek_python(PyObject *f, int64_t offset, int whence) {
         goto fail;
     if ((offset_ = PyLong_FromLong(offset)) == NULL)
         goto fail;
-    // We can't use PyObject_CallMethod because of an issue with building wheels
-    // on 32-bit OSes.
-    if ((data = PyObject_CallMethodObjArgs(f, seek_fn_name, whence_, offset_, NULL)) == NULL)
+    // We can't use PyObject_CallMethod because of an issue
+    // with building wheels on 32-bit OSes.
+    if ((data = PyObject_CallMethodObjArgs(f, seek_fn_name, offset_, whence_, NULL)) == NULL)
         goto fail;
 
     Py_DECREF(data);
