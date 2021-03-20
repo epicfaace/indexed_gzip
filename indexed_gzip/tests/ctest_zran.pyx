@@ -270,7 +270,7 @@ def test_fseek():
         print("offset", offset, "whence", whence)
         raise Exception((offset, whence))
         return 999
-    # f.seek = custom_seek
+    f.seek = custom_seek
     assert f.tell() == 1, "nope 269"
     zran_file_util._fseek_python(<PyObject*>f, 1, 2)
     assert f.tell() == 2, "nope 271: " + str(f.tell())
