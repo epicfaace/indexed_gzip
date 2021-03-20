@@ -112,9 +112,11 @@ int _fseek_python(PyObject *f, int64_t offset, int whence) {
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
 
-    // We can't use PyObject_CallMethod because of an issue
-    // with building wheels on 32-bit OSes, so we have to
-    // manually build up the arguments instead.
+    // We can't use PyObject_CallMethod with multiple arguments
+    // because it causes tests with 32-bit OS wheels to fail,
+    // so we have to manually build up the arguments instead.
+    // TODO: File an issue with cpython about this.
+    // data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence);
     if ((seek_fn_name = PyUnicode_FromString("seek")) == NULL)
         goto fail;
     if ((whence_ = PyLong_FromLong(whence)) == NULL)
