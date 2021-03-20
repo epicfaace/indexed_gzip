@@ -28,7 +28,7 @@ int64_t _ftell_python(PyObject *f);
  * Implements a method analogous to fseek that is performed on Python
  * file-like objects.
  */
-int _fseek_python(PyObject *f, int64_t offset, int64_t whence);
+int _fseek_python(PyObject *f, int64_t offset, int whence);
 
 /*
  * Implements a method analogous to feof that is performed on Python file-like
@@ -68,7 +68,7 @@ int ferror_(FILE *fd, PyObject *f);
 /*
  * Calls fseek on fd if specified, otherwise the Python-specific method on f.
  */
-int fseek_(FILE *fd, PyObject *f, int64_t offset, int64_t whence);
+int fseek_(FILE *fd, PyObject *f, int64_t offset, int whence);
 
 /*
  * Calls ftell on fd if specified, otherwise the Python-specific method on f.
