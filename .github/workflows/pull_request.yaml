@@ -2,8 +2,7 @@
 # tests on a range of different versions of Python.
 # It is run on pull requests.
 
-# on: pull_request
-on: workflow_dispatch
+on: pull_request
 
 defaults:
   run:
