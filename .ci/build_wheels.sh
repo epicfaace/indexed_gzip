@@ -4,6 +4,8 @@
 # Numpy is required to build the test modules
 export CIBW_BEFORE_BUILD="pip install cython numpy"
 
+export CIBW_BUILD_VERBOSITY="3"
+
 # Make sure zlib headers are available on linux
 export CIBW_BEFORE_ALL_LINUX="yum install -y zlib-devel"
 
@@ -15,8 +17,8 @@ export CIBW_ENVIRONMENT_WINDOWS="ZLIB_HOME='$ZLIB_HOME'"
 # cython for the Cython.Coverage plugin.
 export CIBW_TEST_REQUIRES="cython pytest pytest-cov coverage numpy nibabel"
 
-# Disable pypy and py27+win32bit builds
-export CIBW_SKIP="pp* cp27-win32"
+# Disable pypy builds
+export CIBW_SKIP="pp*"
 
 # Pytest makes it *very* awkward to run tests
 # from an installed package, and still find/
