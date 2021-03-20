@@ -268,7 +268,7 @@ def test_fseek():
     zran_file_util._fseek_python(<PyObject*>f, 1, SEEK_SET)
     def custom_seek(offset, whence):
         print("offset", offset, "whence", whence)
-        raise Exception((offest, whence))
+        raise Exception((offset, whence))
         return 999
     f.seek = custom_seek
     assert f.tell() == 1, "nope 269"
