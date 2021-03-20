@@ -267,7 +267,7 @@ def test_fseek():
     f = BytesIO(b"abc")
     zran_file_util._fseek_python(<PyObject*>f, 1, SEEK_SET)
     assert f.tell() == 1, "nope 269"
-    zran_file_util._fseek_python(<PyObject*>f, -1, SEEK_END)
+    zran_file_util._fseek_python(<PyObject*>f, -2, SEEK_END)
     assert f.tell() == 2, "nope 271: " + str(f.tell())
     zran_file_util._fseek_python(<PyObject*>f, 100, SEEK_SET)
     assert f.tell() == 100, "nope 273"
