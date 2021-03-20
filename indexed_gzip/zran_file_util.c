@@ -109,7 +109,7 @@ int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
     printf("\nwhence is %lld, offset is %lld\n", whence, offset);
-    data = PyObject_CallMethod(f, "seek", "(ll)", whence, offset);
+    data = PyObject_CallMethod(f, "seek", "ll", whence, offset);
     if (data == NULL)
         goto fail;
 
