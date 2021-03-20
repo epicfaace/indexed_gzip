@@ -103,13 +103,13 @@ fail:
  * Implements a method analogous to fseek that is performed on Python
  * file-like objects.
  */
-int _fseek_python(PyObject *f, int64_t offset, int whence) {
+int _fseek_python(PyObject *f, int64_t offset, int64_t whence) {
 
     PyObject *data;
 
     _ZRAN_FILE_UTIL_ACQUIRE_GIL
 
-    data = PyObject_CallMethod(f, "seek", "(l,i)", offset, whence);
+    data = PyObject_CallMethod(f, "seek", "(l,l)", offset, whence);
     if (data == NULL)
         goto fail;
 
@@ -232,7 +232,7 @@ int ferror_(FILE *fd, PyObject *f) {
 /*
  * Calls fseek on fd if specified, otherwise the Python-specific method on f.
  */
-int fseek_(FILE *fd, PyObject *f, int64_t offset, int whence) {
+int fseek_(FILE *fd, PyObject *f, int64_t offset, int64_t whence) {
     return fd != NULL
         ? FSEEK(fd, offset, whence)
         : _fseek_python(f, offset, whence);

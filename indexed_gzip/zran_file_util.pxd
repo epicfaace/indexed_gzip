@@ -14,7 +14,7 @@ cdef extern from "zran_file_util.h":
     
     int64_t _ftell_python(PyObject *f)
     
-    int _fseek_python(PyObject *f, int64_t offset, int whence)
+    int _fseek_python(PyObject *f, int64_t offset, int64_t whence)
     
     int _feof_python(PyObject *f, size_t f_ret)
     
@@ -28,7 +28,7 @@ cdef extern from "zran_file_util.h":
 
     int ferror_(FILE *fd, PyObject *f)
 
-    int fseek_(FILE *fd, PyObject *f, int64_t offset, int whence)
+    int fseek_(FILE *fd, PyObject *f, int64_t offset, int64_t whence)
 
     int64_t ftell_(FILE *fd, PyObject *f)
 
