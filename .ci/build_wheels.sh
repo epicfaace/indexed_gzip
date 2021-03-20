@@ -29,7 +29,7 @@ export CIBW_SKIP="pp*"
 # correctly.
 echo '#!/usr/bin/env bash'                                                   >  testcmd
 echo 'cp $1/.coveragerc $1/setup.cfg .'                                      >> testcmd
-echo 'python -m indexed_gzip.tests -c setup.cfg -m "not slow_test and zran_test" --no-cov' >> testcmd
+echo 'python -m indexed_gzip.tests -c setup.cfg -m "not slow_test" --no-cov' >> testcmd
 chmod a+x testcmd
 
 export CIBW_TEST_COMMAND="bash {project}/testcmd {project}"
