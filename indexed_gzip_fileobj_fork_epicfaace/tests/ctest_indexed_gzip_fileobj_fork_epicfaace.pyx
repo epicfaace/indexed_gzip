@@ -33,10 +33,15 @@ import indexed_gzip_fileobj_fork_epicfaace as igzip
 from . import gen_test_data
 from . import check_data_valid
 from . import tempdir
+from . import compress
 
 from libc.stdio cimport (SEEK_SET,
                          SEEK_CUR,
                          SEEK_END)
+
+
+def error_fn(*args, **kwargs):
+    raise Exception("Error")
 
 
 def read_element(gzf, element, seek=True):
@@ -188,11 +193,16 @@ def test_init_success_cases(concat, drop):
         gf1.close()
         gf2.close()
         gf3.close()
+        del gf1
+        del gf2
+        del gf3
 
 
-def test_create_from_open_handle(testfile, nelems, seed, drop):
+def test_create_from_open_handle(testfile, nelems, seed, drop, file_like_object):
 
     f   = open(testfile, 'rb')
+    if file_like_object:
+        f = BytesIO(f.read())
     gzf = igzip._IndexedGzipFile(fileobj=f, drop_handles=drop)
 
     assert gzf.fileobj() is f
@@ -200,7 +210,6 @@ def test_create_from_open_handle(testfile, nelems, seed, drop):
 
     element = np.random.randint(0, nelems, 1)
     readval = read_element(gzf, element)
-
 
     gzf.close()
 
@@ -211,12 +220,16 @@ def test_create_from_open_handle(testfile, nelems, seed, drop):
 
     finally:
         f.close()
+        del gzf
+        del f
+
 
 def test_accept_filename_or_fileobj(testfile, nelems):
 
     f    = None
     gzf1 = None
     gzf2 = None
+    gzf3 = None
 
     try:
         f    = open(testfile, 'rb')
@@ -238,6 +251,10 @@ def test_accept_filename_or_fileobj(testfile, nelems):
         if gzf2 is not None: gzf2.close()
         if gzf1 is not None: gzf1.close()
         if f    is not None: f   .close()
+        del f
+        del gzf1
+        del gzf2
+        del gzf3
 
 
 def test_handles_not_dropped(testfile, nelems, seed):
@@ -318,6 +335,34 @@ def test_read_all(testfile, nelems, use_mmap, drop):
     with igzip._IndexedGzipFile(filename=testfile, drop_handles=drop) as f:
         data = f.read(nelems * 8)
 
+    data = np.ndarray(shape=nelems, dtype=np.uint64, buffer=data)
+
+    # Check that every value is valid
+    assert check_data_valid(data, 0)
+
+
+def test_simple_read_with_null_padding():
+
+    fileobj = BytesIO(gzip.compress(b"hello world") + b"\0" * 100)
+    
+    with igzip._IndexedGzipFile(fileobj=fileobj) as f:
+        assert f.read() == b"hello world"
+        f.seek(3)
+        assert f.read() == b"lo world"
+        f.seek(20)
+        assert f.read() == b""
+
+
+def test_read_with_null_padding(testfile, nelems):
+
+    fileobj = BytesIO(open(testfile, "rb").read() + b"\0" * 100)
+    
+    with igzip._IndexedGzipFile(fileobj=fileobj) as f:
+        data = f.read(nelems * 8)
+        # Read a bit further so we reach the zero-padded area.
+        # This line should not throw an exception.
+        f.read(1)
+    
     data = np.ndarray(shape=nelems, dtype=np.uint64, buffer=data)
 
     # Check that every value is valid
@@ -721,7 +766,7 @@ def test_import_export_index():
             with open(idxfname, 'wb') as idxf:
                 f.export_index(fileobj=idxf)
 
-        # Check that it works
+        # Check that we can read it back
         with igzip._IndexedGzipFile(fname) as f:
 
             # Should raise if wrong permissions
@@ -736,6 +781,17 @@ def test_import_export_index():
             f.seek(65535 * 8)
             val = np.frombuffer(f.read(8), dtype=np.uint64)
             assert val[0] == 65535
+
+        # # Test exporting to / importing from a file-like object
+        # idxf = BytesIO()
+        # with igzip._IndexedGzipFile(fname) as f:
+        #     f.export_index(fileobj=idxf)
+        # idxf.seek(0)
+        # with igzip._IndexedGzipFile(fname) as f:
+        #     f.import_index(fileobj=idxf)
+        #     f.seek(65535 * 8)
+        #     val = np.frombuffer(f.read(8), dtype=np.uint64)
+        #     assert val[0] == 65535
 
 
 def test_wrapper_class():
@@ -814,8 +870,9 @@ def test_picklable():
 
     with tempdir():
         data = np.random.randint(1, 1000, (10000, 10000), dtype=np.uint32)
-        with gzip.open(fname, 'wb') as f:
+        with open(fname+'.bin', 'wb') as f:
             f.write(data.tobytes())
+        compress(fname+'.bin', fname)
         del f
 
         gzf        = igzip.IndexedGzipFile(fname)
@@ -856,8 +913,9 @@ def test_copyable():
 
     with tempdir():
         data = np.random.randint(1, 1000, (10000, 10000), dtype=np.uint32)
-        with gzip.open(fname, 'wb') as f:
+        with open(fname+'.bin', 'wb') as f:
             f.write(data.tobytes())
+        compress(fname+'.bin', fname)
         del f
 
         gzf        = igzip.IndexedGzipFile(fname)

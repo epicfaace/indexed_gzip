@@ -48,16 +48,27 @@ def test_init_success_cases(concat):
 def test_init_success_cases_drop_handles(concat):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_init_success_cases(concat, True)
 
+# def test_accept_filename_or_fileobj(testfile, nelems):
+#     ctest_indexed_gzip_fileobj_fork_epicfaace.test_accept_filename_or_fileobj(testfile, nelems)
+
+# def test_prioritize_fd_over_f(testfile, nelems):
+#     ctest_indexed_gzip_fileobj_fork_epicfaace.test_prioritize_fd_over_f(testfile, nelems)
+
 def test_create_from_open_handle(testfile, nelems, seed):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_create_from_open_handle(
-        testfile, nelems, seed, False)
-
-def test_accept_filename_or_fileobj(testfile, nelems):
-    ctest_indexed_gzip_fileobj_fork_epicfaace.test_accept_filename_or_fileobj(testfile, nelems)
+        testfile, nelems, seed, False, False)
 
 def test_create_from_open_handle_drop_handles(testfile, nelems, seed):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_create_from_open_handle(
-        testfile, nelems, seed, True)
+        testfile, nelems, seed, True, False)
+
+# def test_create_from_file_like_obj(testfile, nelems, seed):
+#     ctest_indexed_gzip_fileobj_fork_epicfaace.test_create_from_open_handle(
+#         testfile, nelems, seed, False, True)
+
+# def test_create_from_file_like_obj_drop_handles(testfile, nelems, seed):
+#     ctest_indexed_gzip_fileobj_fork_epicfaace.test_create_from_open_handle(
+#         testfile, nelems, seed, True, True)
 
 def test_handles_not_dropped(testfile, nelems, seed):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_handles_not_dropped(testfile, nelems, seed)
@@ -70,6 +81,12 @@ def test_read_all(testfile, nelems, use_mmap):
 
 def test_read_all_drop_handles(testfile, nelems, use_mmap):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_read_all(testfile, nelems, use_mmap, True)
+
+def test_simple_read_with_null_padding():
+    ctest_indexed_gzip_fileobj_fork_epicfaace.test_simple_read_with_null_padding()
+
+def test_read_with_null_padding(testfile, nelems):
+    ctest_indexed_gzip_fileobj_fork_epicfaace.test_read_with_null_padding(testfile, nelems)
 
 def test_read_beyond_end(concat):
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_read_beyond_end(concat, False)
@@ -150,7 +167,6 @@ def test_size_multiple_of_readbuf():
 def test_picklable():
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_picklable()
 
-@pytest.mark.slow_test
 def test_copyable():
     ctest_indexed_gzip_fileobj_fork_epicfaace.test_copyable()
 
