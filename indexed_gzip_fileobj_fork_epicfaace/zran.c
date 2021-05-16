@@ -1812,29 +1812,28 @@ static int _zran_inflate(zran_index_t *index,
              * size is an exact multiple of
              # the read buffer size.
              */
-            if ((ftell_(index->f) >= index->compressed_size)) {
-                if ((uint64_t) ftell_(index->fd, index->f) >= index->compressed_size) {
-                    if (strm->avail_in >= 9) {
-                        /* We have two cases here: A) everything remaining in strm->next_in is null bytes
-                        * (in which case we have essentially reached ZRAN_INFLATE_EOF) or
-                        * B) strm->next_in contains some compressed data and the entire 8-byte footer within it.
-                        * We can distinguish A) from B) by reading the remainder of strm->next_in.
-                        * If they're all null bytes, we're in A). Otherwise, we're in B).
-                        */
-                        all_null_bytes = 1;
-                        for (i = 0; i < strm->avail_in && all_null_bytes; i++) {
-                            all_null_bytes &= *(strm->next_in + i) == '\0';
-                        }
-
-                        if (all_null_bytes) {
-                            // We're in case A), so let's skip all the null bytes. We'll
-                            // end up returning ZRAN_INFLATE_EOF.
-                            strm->next_in += i;
-                            strm->avail_in -= i;
-                        }
-                        // Else, we're in case B).
+            if ((uint64_t) (ftell_(index->f) >= index->compressed_size)) {
+                if (strm->avail_in >= 9) {
+                    /* We have two cases here: A) everything remaining in strm->next_in is null bytes
+                    * (in which case we have essentially reached ZRAN_INFLATE_EOF) or
+                    * B) strm->next_in contains some compressed data and the entire 8-byte footer within it.
+                    * We can distinguish A) from B) by reading the remainder of strm->next_in.
+                    * If they're all null bytes, we're in A). Otherwise, we're in B).
+                    */
+                    all_null_bytes = 1;
+                    for (i = 0; i < strm->avail_in && all_null_bytes; i++) {
+                        all_null_bytes &= *(strm->next_in + i) == '\0';
                     }
-                    if (strm->avail_in <= 8) {
+
+                    if (all_null_bytes) {
+                        // We're in case A), so let's skip all the null bytes. We'll
+                        // end up returning ZRAN_INFLATE_EOF.
+                        strm->next_in += i;
+                        strm->avail_in -= i;
+                    }
+                    // Else, we're in case B).
+                }
+                if (strm->avail_in <= 8) {
 
                     zran_log("End of file, stopping inflation\n");
 
