@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-choco install --ignore-dependencies vcpython27
+# choco install --ignore-dependencies vcpython27
