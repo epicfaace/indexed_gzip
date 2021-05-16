@@ -47,10 +47,10 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Install Visual C++ for Python 2.7
-        if: runner.os == 'Windows'
-        run: |
-          choco install vcpython27 -f -y
+      # - name: Install Visual C++ for Python 2.7
+      #   if: runner.os == 'Windows'
+      #   run: |
+      #     choco install vcpython27 -f -y
 
       - name: Download zlib
         if:   ${{ matrix.os == 'windows-latest' }}
