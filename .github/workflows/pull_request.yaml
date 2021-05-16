@@ -2,7 +2,11 @@
 # tests on a range of different versions of Python.
 # It is run on pull requests.
 
-on: pull_request
+on:
+  pull_request:
+  push:
+    branches:
+      - publish
 
 defaults:
   run:
