@@ -17,7 +17,7 @@ def pytest_addoption(parser):
     parser.addoption('--nelems',
                      type=str,
                      action='store',
-                     default='rnd_167772',
+                     default='rnd_16777217',
                      help='Number of uint64 elements for test data')
 
     parser.addoption('--concat',

@@ -257,6 +257,36 @@ def test_accept_filename_or_fileobj(testfile, nelems):
         del gzf3
 
 
+def test_prioritize_fd_over_f(testfile, nelems):
+    """When a fileobj with an associated fileno is passed to IndexedGzipFile,
+    the fileobj's file descriptor (fd) should be utilized by zran.c
+    instead of the file-like object specified by fileobj (f).
+    """
+    if sys.version_info[0] < 3:
+        # We can't set the .read attribute in Python 2
+        # because it's read-only, so skip it.
+        return
+
+    f    = None
+    gzf  = None
+
+    try:
+        f       = open(testfile, 'rb')
+        f.read  = error_fn  # If the file-like object were directly used by zran.c, reading would raise an error.
+        gzf     = igzip._IndexedGzipFile(fileobj=f)
+
+        element  = np.random.randint(0, nelems, 1)
+        readval  = read_element(gzf, element)
+
+        assert readval == element
+
+    finally:
+        if gzf is not None: gzf.close()
+        if f   is not None: f  .close()
+        del f
+        del gzf
+
+
 def test_handles_not_dropped(testfile, nelems, seed):
 
     # When drop_handles is False
@@ -782,16 +812,16 @@ def test_import_export_index():
             val = np.frombuffer(f.read(8), dtype=np.uint64)
             assert val[0] == 65535
 
-        # # Test exporting to / importing from a file-like object
-        # idxf = BytesIO()
-        # with igzip._IndexedGzipFile(fname) as f:
-        #     f.export_index(fileobj=idxf)
-        # idxf.seek(0)
-        # with igzip._IndexedGzipFile(fname) as f:
-        #     f.import_index(fileobj=idxf)
-        #     f.seek(65535 * 8)
-        #     val = np.frombuffer(f.read(8), dtype=np.uint64)
-        #     assert val[0] == 65535
+        # Test exporting to / importing from a file-like object
+        idxf = BytesIO()
+        with igzip._IndexedGzipFile(fname) as f:
+            f.export_index(fileobj=idxf)
+        idxf.seek(0)
+        with igzip._IndexedGzipFile(fname) as f:
+            f.import_index(fileobj=idxf)
+            f.seek(65535 * 8)
+            val = np.frombuffer(f.read(8), dtype=np.uint64)
+            assert val[0] == 65535
 
 
 def test_wrapper_class():

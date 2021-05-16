@@ -49,7 +49,7 @@ def poll(until):
     while not until():
         time.sleep(0.5)
         cur = time.time()
-        elapsed = cur - start
+        elapsed = int(round(cur - start))
         if int(elapsed) % 60 == 0:
             print('Waiting ({:0.2f} minutes)'.format(elapsed / 60.0))
 

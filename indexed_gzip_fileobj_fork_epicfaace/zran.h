@@ -6,8 +6,6 @@
  * Alder, which ships with the zlib source code. It allows the creation
  * of an index into a compressed file, which is used to improve the speed
  * of random seek/read access to the uncompressed data.
- *
- * Author: Paul McCarthy <pauldmccarthy@gmail.com>
  */
 
 #include <stdlib.h>
@@ -38,6 +36,11 @@ enum {
  * should ever need to be accessed or modified directly.
  */
 struct _zran_index {
+
+    /*
+     * Handle to the compressed file.
+     */
+    FILE         *fd;
 
     /*
      * Handle to the compressed file object.
@@ -179,15 +182,6 @@ struct _zran_point {
 };
 
 
-size_t _fread_python(void *ptr, size_t size, size_t nmemb, PyObject *f);
-long int _ftell_python(PyObject *f);
-int _fseek_python(PyObject *f, long int offset, int whence);
-int _feof_python(PyObject *f, int64_t size);
-int _ferror_python(PyObject *f);
-int _fflush_python(PyObject *f);
-size_t _fwrite_python(const void *ptr, size_t size, size_t nmemb, PyObject *f);
-int _getc_python(PyObject *f);
-
 /*
  * Initialise a zran_index_t struct for use with the given file.
  *
@@ -203,14 +197,15 @@ int _getc_python(PyObject *f);
  *     ZRAN_AUTO_BUILD: Build the index automatically on demand.
  */
 int  zran_init(
-  zran_index_t *index,        /* The index                          */
+  zran_index_t *index,        /* The index                                  */
+  FILE         *fd,           /* Open handle to the compressed file         */
   PyObject     *f,            /* Open handle to the compressed file object  */
   uint32_t      spacing,      /* Distance in bytes between
-                                 index seek points                  */
+                                 index seek points                          */
   uint32_t      window_size,  /* Number of uncompressed bytes
-                                 to store with each point           */
-  uint32_t      readbuf_size, /* Number of bytes to read at a time  */
-  uint16_t      flags         /* Flags controlling index behaviour  */
+                                 to store with each point                   */
+  uint32_t      readbuf_size, /* Number of bytes to read at a time          */
+  uint16_t      flags         /* Flags controlling index behaviour          */
 );
 
 
@@ -370,8 +365,9 @@ enum {
  *     file.
  */
 int zran_export_index(
-  zran_index_t  *index, /* The index                  */
-  PyObject      *f     /* Open handle to export file object */
+  zran_index_t  *index, /* The index                         */
+  FILE          *fd,    /* Open handle to export file        */
+  PyObject      *f      /* Open handle to export file object */
 );
 
 /* Return codes for zran_import_index. */
@@ -420,8 +416,9 @@ enum {
  *   - ZRAN_IMPORT_UNKNOWN_FORMAT to indicate given file is of unknown format.
  */
 int zran_import_index(
-  zran_index_t  *index, /* The index                  */
-  PyObject      *f     /* Open handle to export file object */
+  zran_index_t  *index, /* The index                         */
+  FILE          *fd,    /* Open handle to import file        */
+  PyObject      *f      /* Open handle to import file object */
 );
 
 #endif /* __ZRAN_H__ */

@@ -160,7 +160,7 @@ else:
     # rather than use system-provided zlib
     if ZLIB_HOME is None:
         libs.append('z')
-    extra_compile_args += ['-Wall', '-pedantic', '-Wno-unused-function']
+    extra_compile_args += ['-Wall', '-Wno-unused-function']
 
 if testing:
     compiler_directives['linetrace'] = True
@@ -175,7 +175,8 @@ else:           pyx_ext = 'c'
 igzip_ext = Extension(
     'indexed_gzip_fileobj_fork_epicfaace.indexed_gzip_fileobj_fork_epicfaace',
     [op.join('indexed_gzip_fileobj_fork_epicfaace', 'indexed_gzip_fileobj_fork_epicfaace.{}'.format(pyx_ext)),
-     op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c')] + extra_srcs,
+     op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c'),
+     op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran_file_util.c')] + extra_srcs,
     libraries=libs,
     library_dirs=lib_dirs,
     include_dirs=include_dirs,
@@ -200,7 +201,8 @@ if not windows:
     test_exts.append(Extension(
         'indexed_gzip_fileobj_fork_epicfaace.tests.ctest_zran',
         [op.join('indexed_gzip_fileobj_fork_epicfaace', 'tests', 'ctest_zran.{}'.format(pyx_ext)),
-         op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c')] + extra_srcs,
+         op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c'),
+         op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran_file_util.c')] + extra_srcs,
         libraries=libs,
         library_dirs=lib_dirs,
         include_dirs=include_dirs,

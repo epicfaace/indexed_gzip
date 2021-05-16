@@ -2,8 +2,6 @@
 #
 # __init__.py - The indexed_gzip_fileobj_fork_epicfaace namespace.
 #
-# Author: Paul McCarthy <pauldmccarthy@gmail.com>
-#
 """The indexed_gzip_fileobj_fork_epicfaace namespace. """
 
 
