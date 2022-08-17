@@ -494,7 +494,7 @@ enum {
  *   - ZRAN_IMPORT_UNKNOWN_FORMAT to indicate given file is of unknown format.
  *
  *   - ZRAN_IMPORT_UNSUPPORTED_VERSION to indicate that the file has a version
- *     which is too new for this version of indexed_gzip to parse.
+ *     which is too new for this version of indexed_gzip_fileobj_fork_epicfaace to parse.
  */
 int zran_import_index(
   zran_index_t  *index, /* The index                         */

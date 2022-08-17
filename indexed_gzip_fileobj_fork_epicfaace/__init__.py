@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #
-# __init__.py - The indexed_gzip namespace.
+# __init__.py - The indexed_gzip_fileobj_fork_epicfaace namespace.
 #
-"""The indexed_gzip namespace. """
+"""The indexed_gzip_fileobj_fork_epicfaace namespace. """
 
 
-from .indexed_gzip import (_IndexedGzipFile,     # noqa
+from .indexed_gzip_fileobj_fork_epicfaace import (_IndexedGzipFile,     # noqa
                            IndexedGzipFile,
                            open,
                            NotCoveredError,

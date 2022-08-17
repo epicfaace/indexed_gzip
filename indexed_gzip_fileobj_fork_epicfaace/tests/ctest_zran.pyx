@@ -69,8 +69,8 @@ cdef extern from "sys/mman.h":
     cdef enum:
         MAP_FAILED
 
-cimport indexed_gzip.zran as zran
-cimport indexed_gzip.zran_file_util as zran_file_util
+cimport indexed_gzip_fileobj_fork_epicfaace.zran as zran
+cimport indexed_gzip_fileobj_fork_epicfaace.zran_file_util as zran_file_util
 
 np.import_array()
 
@@ -1417,7 +1417,7 @@ def test_standard_usage_with_null_padding(concat):
     assert np.all(np.frombuffer(pybuf, dtype=np.uint32) == data)
 
 
-# pauldmccarthy/indexed_gzip#82
+# pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace#82
 def test_inflateInit_leak_on_error():
     """Make sure memory is not leaked after a successful call to
     inflateInit2(), but then a failure on subsequent zlib calls.
@@ -1455,7 +1455,7 @@ def test_inflateInit_leak_on_error():
     assert np.all(mem == mem[0])
 
 
-# pauldmccarthy/indexed_gzip#80
+# pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace#80
 def test_read_eof_memmove_rotate_bug(seed):
 
     # This bug was triggered by the read buffer rotation

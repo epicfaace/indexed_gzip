@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run indexed_gzip unit tests. Assumes that
+# Run indexed_gzip_fileobj_fork_epicfaace unit tests. Assumes that
 # python setup.py develop has been run.
 
 set -e
@@ -23,7 +23,7 @@ if [[ -n "$NELEMS" ]]; then
   NELEMS="--nelems $NELEMS"
 fi
 
-python -m indexed_gzip.tests      \
+python -m indexed_gzip_fileobj_fork_epicfaace.tests      \
        -c pyproject.toml          \
        -v -s                      \
        -m "$TEST_SUITE"           \

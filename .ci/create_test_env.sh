@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set up a virtual environment with build and
-# run-time dependencies for indexed_gzip.
+# run-time dependencies for indexed_gzip_fileobj_fork_epicfaace.
 #
 
 set -e

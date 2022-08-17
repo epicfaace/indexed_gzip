@@ -5,7 +5,7 @@ set -e
 # Make sure zlib headers are available on linux
 export CIBW_BEFORE_ALL_LINUX="yum install -y zlib-devel || apt-get install -y zlib1g-dev || apk add zlib-dev || true"
 
-# ZLIB is compiled into indexed_gzip on windwos -
+# ZLIB is compiled into indexed_gzip_fileobj_fork_epicfaace on windwos -
 # see .ci/download_zlib.sh and setup.py
 export CIBW_ENVIRONMENT_WINDOWS="ZLIB_HOME='$ZLIB_HOME'"
 
@@ -31,7 +31,7 @@ export CIBW_TEST_SKIP="*i686* *aarch64*"
 # interpret a conftest.py file correctly.
 echo '#!/usr/bin/env bash'                                               >  testcmd
 echo 'cp $1/pyproject.toml .'                                            >> testcmd
-echo 'python -m indexed_gzip.tests -c pyproject.toml -m "not slow_test"' >> testcmd
+echo 'python -m indexed_gzip_fileobj_fork_epicfaace.tests -c pyproject.toml -m "not slow_test"' >> testcmd
 chmod a+x testcmd
 
 export CIBW_TEST_COMMAND="bash {project}/testcmd {project}"

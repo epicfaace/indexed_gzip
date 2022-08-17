@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# benchmark.py - benchmark indexed_gzip
+# benchmark.py - benchmark indexed_gzip_fileobj_fork_epicfaace
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -21,7 +21,7 @@ import            contextlib
 
 import numpy as np
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 
 @contextlib.contextmanager
