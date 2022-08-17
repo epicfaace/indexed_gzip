@@ -10,3 +10,4 @@ pyvenv.cfg
 indexed_gzip_fileobj_fork_epicfaace.c
 ctest_indexed_gzip_fileobj_fork_epicfaace.c
 ctest_zran.c
+*.pyc
