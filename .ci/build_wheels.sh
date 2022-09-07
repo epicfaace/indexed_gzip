@@ -24,7 +24,7 @@ export CIBW_SKIP="pp* *musllinux* cp27* cp35*"
 # "numpy.linalg.det(numpy.eye(3))". This occurs when numpy has
 # to be compiled from source during the build, so can be
 # re-visited if/when numpy is avaialble on all platforms.
-export CIBW_TEST_SKIP="*i686* *aarch64*"
+export CIBW_TEST_SKIP="*i686* *aarch64* *win*"
 
 # Pytest makes it *very* awkward to run tests
 # from an installed package, and still find/
