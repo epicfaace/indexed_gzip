@@ -41,7 +41,7 @@ export CIBW_TEST_COMMAND="bash {project}/testcmd {project}"
 python -m pip install cibuildwheel
 python -m cibuildwheel --output-dir ./dist
 
-# Disable py27 builds on windows
-export CIBW_BUILD="cp27-mac* cp27-*linux*"
+# Disable py27 builds
+export CIBW_BUILD=""
 python -m pip install cibuildwheel==1.*
 python -m cibuildwheel --allow-empty --output-dir ./dist
