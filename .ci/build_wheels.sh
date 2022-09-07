@@ -7,7 +7,7 @@ export CIBW_BEFORE_BUILD="pip install cython numpy"
 # Make sure zlib headers are available on linux
 export CIBW_BEFORE_ALL_LINUX="yum install -y zlib-devel"
 
-# ZLIB is compiled into indexed_gzip on windwos -
+# ZLIB is compiled into indexed_gzip on windows -
 # see .ci/download_zlib.sh and setup.py
 export CIBW_ENVIRONMENT_WINDOWS="ZLIB_HOME='$ZLIB_HOME'"
 
