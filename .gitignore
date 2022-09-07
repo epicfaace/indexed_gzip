@@ -1,0 +1,13 @@
+bin
+*.egg-info
+lib
+lib64
+venv
+notes.md
+pyvenv.cfg
+*.o
+*.so
+indexed_gzip_fileobj_fork_epicfaace.c
+ctest_indexed_gzip_fileobj_fork_epicfaace.c
+ctest_zran.c
+*.pyc

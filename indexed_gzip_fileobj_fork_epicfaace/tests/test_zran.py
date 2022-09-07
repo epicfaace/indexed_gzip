@@ -43,6 +43,9 @@ if not sys.platform.startswith("win"):
     def test_getc():
         ctest_zran.test_getc()
 
+    def test_seekable():
+        ctest_zran.test_seekable()
+
     def test_init(testfile):
         for no_fds in (True, False):
             ctest_zran.test_init(testfile, no_fds)
@@ -118,3 +121,18 @@ if not sys.platform.startswith("win"):
     def test_export_import_no_points():
         for no_fds in (True, False):
             ctest_zran.test_export_import_no_points(no_fds)
+
+    def test_export_import_format_v0():
+        ctest_zran.test_export_import_format_v0()
+
+    def test_crc_validation(concat):
+        ctest_zran.test_crc_validation(concat)
+
+    def test_standard_usage_with_null_padding(concat):
+        ctest_zran.test_standard_usage_with_null_padding(concat)
+
+    def test_inflateInit_leak_on_error():
+        ctest_zran.test_inflateInit_leak_on_error()
+
+    def test_read_eof_memmove_rotate_bug(seed):
+        ctest_zran.test_read_eof_memmove_rotate_bug(seed)

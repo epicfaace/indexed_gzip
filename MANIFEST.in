@@ -1,8 +1,8 @@
 include                        LICENSE
 include                        README.md
 include                        conftest.py
-recursive-include indexed_gzip *.py
-recursive-include indexed_gzip *.pyx
-recursive-include indexed_gzip *.pxd
-recursive-include indexed_gzip *.c
-recursive-include indexed_gzip *.h
+recursive-include indexed_gzip_fileobj_fork_epicfaace *.py
+recursive-include indexed_gzip_fileobj_fork_epicfaace *.pyx
+recursive-include indexed_gzip_fileobj_fork_epicfaace *.pxd
+recursive-include indexed_gzip_fileobj_fork_epicfaace *.c
+recursive-include indexed_gzip_fileobj_fork_epicfaace *.h

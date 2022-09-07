@@ -1,5 +1,5 @@
 #
-# Tests for the indexed_gzip module.
+# Tests for the indexed_gzip_fileobj_fork_epicfaace module.
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -25,10 +25,10 @@ import                    tempfile
 import                    contextlib
 
 import numpy as np
-from io import BytesIO
+from io import BytesIO, UnsupportedOperation
 import pytest
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 from . import gen_test_data
 from . import check_data_valid
@@ -110,6 +110,54 @@ def test_open_close_ctxmanager(testfile, nelems, seed, drop):
 
     assert readval == element
     assert f.closed
+
+
+def test_open_mode():
+
+    modes = [('r',  True),
+             ('rb', True),
+             (None, True),
+             ('rt', False),
+             ('w',  False),
+             ('wt', False)]
+
+    # open from file
+    with tempdir():
+        with gzip.open('f.gz', 'wb') as f:
+            f.write(b'12345')
+        for mode, expect in modes:
+            if expect:
+                gzf = igzip.IndexedGzipFile('f.gz', mode=mode)
+                assert gzf.read() == b'12345'
+            else:
+                with pytest.raises(ValueError):
+                    igzip.IndexedGzipFile('f.gz', mode=mode)
+
+    # open from fileobj
+    class BytesIOWithMode(BytesIO):
+        pass
+
+    # accept file-like without mode attribute
+    modes.append(('del', True))
+
+    for mode, expect in modes:
+
+        if mode == 'del' and hasattr(BytesIOWithMode, 'mode'):
+            delattr(BytesIOWithMode, 'mode')
+        else:
+            BytesIOWithMode.mode = mode
+
+        fileobj = BytesIOWithMode()
+        with gzip.GzipFile(fileobj=fileobj, mode='wb') as f:
+            f.write(b'12345')
+
+        print(mode, expect)
+
+        if expect:
+            assert igzip.IndexedGzipFile(fileobj=fileobj).read() == b'12345'
+        else:
+            with pytest.raises(ValueError):
+                igzip.IndexedGzipFile(fileobj=fileobj).read()
 
 
 def test_atts(testfile, drop):
@@ -329,20 +377,28 @@ def test_manual_build():
 
         with igzip._IndexedGzipFile(fname, auto_build=False) as f:
 
-            # Seeking should fail
-            with pytest.raises(igzip.NotCoveredError):
-                f.seek(1234)
+            # Seeking to 0 should work, but
+            # anywhere else should fail
+            f.seek(0)
+            for off in [1, 2, 20, 200]:
+                with pytest.raises(igzip.NotCoveredError):
+                    f.seek(off)
 
             # Reading from beginning should work
             readval = read_element(f, 0, seek=False)
             assert readval == 0
 
+            # but subsequent reads should fail
+            # (n.b. this might change in the future)
+            with pytest.raises(igzip.NotCoveredError):
+                readval = read_element(f, 1, seek=False)
+
             # Seek should still fail even after read
-            f.seek(0)
             with pytest.raises(igzip.NotCoveredError):
                 f.seek(8)
 
             # But reading from beginning should still work
+            f.seek(0)
             readval = read_element(f, 0, seek=False)
             assert readval == 0
 
@@ -364,6 +420,44 @@ def test_read_all(testfile, nelems, use_mmap, drop):
 
     with igzip._IndexedGzipFile(filename=testfile, drop_handles=drop) as f:
         data = f.read(nelems * 8)
+
+    data = np.ndarray(shape=nelems, dtype=np.uint64, buffer=data)
+
+    # Check that every value is valid
+    assert check_data_valid(data, 0)
+
+
+def test_simple_read_with_null_padding():
+
+
+    fileobj = BytesIO()
+
+    with gzip.GzipFile(fileobj=fileobj, mode='wb') as f:
+        f.write(b"hello world")
+
+    fileobj.write(b"\0" * 100)
+
+    with igzip._IndexedGzipFile(fileobj=fileobj) as f:
+        assert f.read() == b"hello world"
+        f.seek(3)
+        assert f.read() == b"lo world"
+        f.seek(20)
+        assert f.read() == b""
+
+
+def test_read_with_null_padding(testfile, nelems, use_mmap):
+
+    if use_mmap:
+        pytest.skip('skipping test_read_with_null_padding test '
+                    'as it will require too much memory')
+
+    fileobj = BytesIO(open(testfile, "rb").read() + b"\0" * 100)
+
+    with igzip._IndexedGzipFile(fileobj=fileobj) as f:
+        data = f.read(nelems * 8)
+        # Read a bit further so we reach the zero-padded area.
+        # This line should not throw an exception.
+        f.read(1)
 
     data = np.ndarray(shape=nelems, dtype=np.uint64, buffer=data)
 
@@ -787,10 +881,30 @@ def test_import_export_index():
         # Test exporting to / importing from a file-like object
         idxf = BytesIO()
         with igzip._IndexedGzipFile(fname) as f:
+            f.build_full_index()
             f.export_index(fileobj=idxf)
         idxf.seek(0)
         with igzip._IndexedGzipFile(fname) as f:
             f.import_index(fileobj=idxf)
+            f.seek(65535 * 8)
+            val = np.frombuffer(f.read(8), dtype=np.uint64)
+            assert val[0] == 65535
+
+        # Test creating the index when file is unseekable, then using the index when file is seekable.
+        fileobj = open(fname, 'rb')
+        def new_seek(*args, **kwargs):
+            raise UnsupportedOperation
+        old_seek = fileobj.seek
+        fileobj.seekable = lambda: False
+        fileobj.seek = new_seek
+        # generate an index file
+        with igzip._IndexedGzipFile(fileobj) as f:
+            f.build_full_index()
+            f.export_index(idxfname)
+        fileobj.seek = old_seek
+        fileobj.seekable = lambda: True
+        # Check that index file works via __init__
+        with igzip._IndexedGzipFile(fileobj, index_file=idxfname) as f:
             f.seek(65535 * 8)
             val = np.frombuffer(f.read(8), dtype=np.uint64)
             assert val[0] == 65535
@@ -817,19 +931,38 @@ def test_wrapper_class():
             f.import_index(idxfname)
 
 
+def gcd(num):
+    if num <= 3:
+        return 1
+    candidates = list(range(int(np.ceil(np.sqrt(num))), 2, -2))
+    candidates.extend((2, 1))
+    for divisor in candidates:
+        if num % divisor == 0:
+            return divisor
+    return 1
+
+
 def test_size_multiple_of_readbuf():
 
     fname = 'test.gz'
 
     with tempdir():
-        data = np.random.randint(1, 1000, 10000, dtype=np.uint32)
 
-        with gzip.open(fname, 'wb') as f:
-            f.write(data.tobytes())
-        del f
-        f = None
+        while True:
 
-        fsize = op.getsize(fname)
+            data = np.random.randint(1, 1000, 100000, dtype=np.uint32)
+            with gzip.open(fname, 'wb') as f:
+                f.write(data.tobytes())
+            del f
+            f = None
+
+            # we need a file size that is divisible
+            # by the minimum readbuf size
+            fsize = op.getsize(fname)
+            if gcd(fsize) >= 128:
+                break
+
+        # readbuf size == file size
         bufsz = fsize
 
         with igzip.IndexedGzipFile(fname, readbuf_size=bufsz) as f:
@@ -838,18 +971,13 @@ def test_size_multiple_of_readbuf():
         f = None
 
         with igzip.IndexedGzipFile(fname, readbuf_size=bufsz) as f:
-            read = np.ndarray(shape=10000, dtype=np.uint32, buffer=f.read())
+            read = np.ndarray(shape=100000, dtype=np.uint32, buffer=f.read())
             assert np.all(read == data)
         del f
         f = None
 
-        # we're screwed if the
-        # file size is prime
-        for div in (2, 3, 5, 7, 11, 13, 17):
-            if div % fsize == 0:
-                break
-
-        bufsz = fsize / div
+        # Use a buf size that is a divisor of the file size
+        bufsz = gcd(fsize)
 
         with igzip.IndexedGzipFile(fname, readbuf_size=bufsz) as f:
             assert f.seek(fsize) == fsize
@@ -857,7 +985,7 @@ def test_size_multiple_of_readbuf():
         f = None
 
         with igzip.IndexedGzipFile(fname, readbuf_size=bufsz) as f:
-            read = np.ndarray(shape=10000, dtype=np.uint32, buffer=f.read())
+            read = np.ndarray(shape=100000, dtype=np.uint32, buffer=f.read())
             assert np.all(read == data)
         del f
         f = None

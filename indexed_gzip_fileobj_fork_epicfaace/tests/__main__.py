@@ -3,7 +3,7 @@
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
 """
-Run indexed_gzip unit tests.  Requires pytest to be installed.
+Run indexed_gzip_fileobj_fork_epicfaace unit tests.  Requires pytest to be installed.
 
 
 Works around a problem with pytest not discovring/running conftest.py files

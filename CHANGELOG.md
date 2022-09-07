@@ -1,4 +1,63 @@
-# `indexed_gzip` changelog
+# `indexed_gzip_fileobj_fork_epicfaace` changelog
+
+
+## 1.6.13 (April 14th 2022)
+
+
+* Changed the default read buffer size used by the `IndexedGzipFile` class
+  (#90).
+* Update to wheel building procedure (#92,#93,#95,#96,#97,#98,#99).
+* Aded `pyproject.toml` to declare build-time requirements (#94).
+
+
+## 1.6.4 (October 18th 2021)
+
+
+* Fixed a bug related to buffering input data, which was causing a spurious
+  `CrcError` (#80, #87).
+
+
+
+## 1.6.3 (September 14th 2021)
+
+
+* Relaxed `mode` check when creating an `IndexedGzipFile` from an open file
+  handle - `fileobj.mode` may now be `'r'` or `'rb'` (or may not exist at all)
+  (#85, #86).
+
+
+## 1.6.2 (September 2nd 2021)
+
+
+* Fixed a memory leak when initialising decompression / inflation (#82, #83).
+* Added file name to exception messages when possible, to assist in diagnosing
+  errors (#84).
+
+
+## 1.6.1 (May 25th 2021)
+
+
+* Tests requiring `nibabel` are now skipped, rather than causing failure (#78).
+
+
+## 1.6.0 (May 23rd 2021)
+
+
+* Python 2.7 wheels for Windows are no longer being built (#71, #73).
+* A backwards-compatible change to the index file format, to accommodate seek
+  points at stream boundaries. Index files created with older versions of
+  `indexed_gzip_fileobj_fork_epicfaace` can still be loaded, but index files created with
+  `indexed_gzip_fileobj_fork_epicfaace` 1.6.0 cannot be loaded by older versions of `indexed_gzip_fileobj_fork_epicfaace`
+  (#75).
+* CRC and size validation of uncompressed data is now performed by default,
+  on the first pass through a GZIP file. This can be disabled by setting the
+  new `skip_crc_check` argument to `False` when creating an
+  `IndexedGzipFile`. Validation is not performed when an existing index is
+  imported from file (#72).
+* Null padding bytes at the end of a GZIP file, or in between GZIP streams,
+  are now skipped over (#69, #70, #72).
+* Seek points are now created at the beginning of every GZIP stream, in files
+  containing concatenated streams (#72).
 
 
 ## 1.5.3 (March 23rd 2021)
@@ -36,7 +95,7 @@
 
 * Fixed a bug in the pickling/copying logic in the `IndexedGzipFile` class
   (#50, #51)
-* New `indexed_gzip.open` function, which just creates and returns an
+* New `indexed_gzip_fileobj_fork_epicfaace.open` function, which just creates and returns an
   `IndexedGzipFile`.
 * When creating an `IndexedGzipFile`, the first argument (`filename`) may
   be either a file name, or an open file handle (#49, #53).
@@ -229,15 +288,15 @@ Changes in this release:
 Changes in this release:
 
 * Unit tests are run on a 32 bit platform
-* The `indexed_gzip` package now has a `__version__` attribute
+* The `indexed_gzip_fileobj_fork_epicfaace` package now has a `__version__` attribute
 
 
 ## 0.5.0 (September 8th 2017)
 
 Changes in this release:
 
-* Re-arranged code layout - there is now a top level `indexed_gzip` package,
-  which contains the `indexed_gzip` module, and the `tests` package. Done so
+* Re-arranged code layout - there is now a top level `indexed_gzip_fileobj_fork_epicfaace` package,
+  which contains the `indexed_gzip_fileobj_fork_epicfaace` module, and the `tests` package. Done so
   that tests can be distributed properly. No API changes though.
 
 * `zran_seek` input parameter types made more specific due to an issue on 32 bit
@@ -306,7 +365,7 @@ Changes in this release:
 
 The following changes have been made in this release:
 
-* `indexed_gzip` now releases the GIL when possible
+* `indexed_gzip_fileobj_fork_epicfaace` now releases the GIL when possible
 * A new `SafeIndexedGzipFile` class provides simple thread-safe file access to
   compressed files.
 * Some initial test coverage using https://travis-ci.org

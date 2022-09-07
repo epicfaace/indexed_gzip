@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Setup script for indexed_gzip.
+"""Setup script for indexed_gzip_fileobj_fork_epicfaace.
 
-If an environment variable called `INDEXED_GZIP_TESTING` is defined, the
+If an environment variable called `indexed_gzip_fileobj_fork_epicfaace_TESTING` is defined, the
 Cython modules are compiled with line-tracing enabled, via the Cython
 `linetrace` directive, and the `CYTHON_TRACE_NOGIL` macro.
 
@@ -10,7 +10,7 @@ https://cython.readthedocs.io/en/latest/src/reference/compilation.html#compiler-
 for more details.
 
 The ZLIB_HOME environment variable can be used to compile and statically link
-ZLIB into the indexed_gzip shared library file. It should point to a directory
+ZLIB into the indexed_gzip_fileobj_fork_epicfaace shared library file. It should point to a directory
 which contains the ZLIB source code. If not provided, the ZLIB header and
 library files are assumed to be provided by the system.
 """
@@ -40,13 +40,13 @@ class Clean(Command):
     def run(self):
 
         base    = op.dirname(__file__)
-        igzbase = op.join(base, 'indexed_gzip')
+        igzbase = op.join(base, 'indexed_gzip_fileobj_fork_epicfaace')
 
         shutil.rmtree(op.join(base, 'build'),
                       ignore_errors=True)
         shutil.rmtree(op.join(base, 'dist'),
                       ignore_errors=True)
-        shutil.rmtree(op.join(base, 'indexed_gzip.egg-info'),
+        shutil.rmtree(op.join(base, 'indexed_gzip_fileobj_fork_epicfaace.egg-info'),
                       ignore_errors=True)
         shutil.rmtree(op.join(base, '.eggs'),
                       ignore_errors=True)
@@ -59,14 +59,15 @@ class Clean(Command):
 
         files = [
             '*.so',
-            '.coverage.*',
-            op.join(igzbase, 'indexed_gzip.c'),
+            op.join(igzbase, 'indexed_gzip_fileobj_fork_epicfaace.c'),
+            op.join(igzbase, 'zran.o'),
+            op.join(igzbase, 'zran_file_util.o'),
             op.join(igzbase, '*.pyc'),
             op.join(igzbase, '*.so'),
             op.join(igzbase, 'tests', '*.so'),
             op.join(igzbase, 'tests', '*.pyc'),
             op.join(igzbase, 'tests', 'ctest_zran.c'),
-            op.join(igzbase, 'tests', 'ctest_indexed_gzip.c')]
+            op.join(igzbase, 'tests', 'ctest_indexed_gzip_fileobj_fork_epicfaace.c')]
 
         for f in files:
             for g in glob.glob(f):
@@ -78,7 +79,7 @@ class Clean(Command):
 python2   = sys.version_info[0] == 2
 noc99     = python2 or (sys.version_info[0] == 3 and sys.version_info[1] <= 4)
 windows   = sys.platform.startswith("win")
-testing   = 'INDEXED_GZIP_TESTING' in os.environ
+testing   = 'indexed_gzip_fileobj_fork_epicfaace_TESTING' in os.environ
 
 # compile ZLIB source?
 ZLIB_HOME = os.environ.get("ZLIB_HOME", None)
@@ -110,20 +111,20 @@ try:
 except Exception:
     have_numpy = False
 
-print('indexed_gzip setup')
+print('indexed_gzip_fileobj_fork_epicfaace setup')
 print('  have_cython: {} (if True, modules will be cythonized, '
       'otherwise pre-cythonized C files are assumed to be '
       'present)'.format(have_cython))
 print('  have_numpy:  {} (if True, test modules will '
       'be compiled)'.format(have_numpy))
 print('  ZLIB_HOME:   {} (if set, ZLIB sources are compiled into '
-      'the indexed_gzip extension)'.format(ZLIB_HOME))
+      'the indexed_gzip_fileobj_fork_epicfaace extension)'.format(ZLIB_HOME))
 print('  testing:     {} (if True, code will be compiled with line '
       'tracing enabled)'.format(testing))
 
 
 # compile flags
-include_dirs        = ['indexed_gzip']
+include_dirs        = ['indexed_gzip_fileobj_fork_epicfaace']
 lib_dirs            = []
 libs                = []
 extra_srcs          = []
@@ -171,12 +172,12 @@ if testing:
 if have_cython: pyx_ext = 'pyx'
 else:           pyx_ext = 'c'
 
-# The indexed_gzip module
+# The indexed_gzip_fileobj_fork_epicfaace module
 igzip_ext = Extension(
-    'indexed_gzip.indexed_gzip',
-    [op.join('indexed_gzip', 'indexed_gzip.{}'.format(pyx_ext)),
-     op.join('indexed_gzip', 'zran.c'),
-     op.join('indexed_gzip', 'zran_file_util.c')] + extra_srcs,
+    'indexed_gzip_fileobj_fork_epicfaace.indexed_gzip_fileobj_fork_epicfaace',
+    [op.join('indexed_gzip_fileobj_fork_epicfaace', 'indexed_gzip_fileobj_fork_epicfaace.{}'.format(pyx_ext)),
+     op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c'),
+     op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran_file_util.c')] + extra_srcs,
     libraries=libs,
     library_dirs=lib_dirs,
     include_dirs=include_dirs,
@@ -186,9 +187,9 @@ igzip_ext = Extension(
 # Optional test modules
 test_exts = [
     Extension(
-        'indexed_gzip.tests.ctest_indexed_gzip',
-        [op.join('indexed_gzip', 'tests',
-                 'ctest_indexed_gzip.{}'.format(pyx_ext))],
+        'indexed_gzip_fileobj_fork_epicfaace.tests.ctest_indexed_gzip_fileobj_fork_epicfaace',
+        [op.join('indexed_gzip_fileobj_fork_epicfaace', 'tests',
+                 'ctest_indexed_gzip_fileobj_fork_epicfaace.{}'.format(pyx_ext))],
         libraries=libs,
         library_dirs=lib_dirs,
         include_dirs=include_dirs,
@@ -199,10 +200,10 @@ test_exts = [
 if not windows:
     # Uses POSIX memmap API so won't work on Windows
     test_exts.append(Extension(
-        'indexed_gzip.tests.ctest_zran',
-        [op.join('indexed_gzip', 'tests', 'ctest_zran.{}'.format(pyx_ext)),
-         op.join('indexed_gzip', 'zran.c'),
-         op.join('indexed_gzip', 'zran_file_util.c')] + extra_srcs,
+        'indexed_gzip_fileobj_fork_epicfaace.tests.ctest_zran',
+        [op.join('indexed_gzip_fileobj_fork_epicfaace', 'tests', 'ctest_zran.{}'.format(pyx_ext)),
+         op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran.c'),
+         op.join('indexed_gzip_fileobj_fork_epicfaace', 'zran_file_util.c')] + extra_srcs,
         libraries=libs,
         library_dirs=lib_dirs,
         include_dirs=include_dirs,
@@ -222,7 +223,7 @@ if have_cython:
 # find the version number
 def readVersion():
     version  = {}
-    initfile = op.join(op.dirname(__file__), 'indexed_gzip', '__init__.py')
+    initfile = op.join(op.dirname(__file__), 'indexed_gzip_fileobj_fork_epicfaace', '__init__.py')
     with open(initfile, 'rt') as f:
         for line in f:
             if line.startswith('__version__'):
@@ -232,15 +233,15 @@ def readVersion():
 
 
 setup(
-    name='indexed_gzip',
-    packages=['indexed_gzip', 'indexed_gzip.tests'],
+    name='indexed_gzip_fileobj_fork_epicfaace',
+    packages=['indexed_gzip_fileobj_fork_epicfaace', 'indexed_gzip_fileobj_fork_epicfaace.tests'],
     version=readVersion(),
     author='Paul McCarthy',
     author_email='pauldmccarthy@gmail.com',
     description='Fast random access of gzip files in Python',
     long_description=readme,
     long_description_content_type='text/markdown',
-    url='https://github.com/pauldmccarthy/indexed_gzip',
+    url='https://github.com/pauldmccarthy/indexed_gzip_fileobj_fork_epicfaace',
     license='zlib',
 
     classifiers=[
@@ -258,6 +259,6 @@ setup(
 
     ext_modules=extensions,
 
-    tests_require=['pytest', 'numpy', 'nibabel', 'coverage', 'pytest-cov'],
+    tests_require=['pytest', 'numpy', 'nibabel'],
     test_suite='tests',
 )

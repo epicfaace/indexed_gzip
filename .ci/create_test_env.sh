@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set up a virtual environment with build and
-# run-time dependencies for indexed_gzip.
+# run-time dependencies for indexed_gzip_fileobj_fork_epicfaace.
 #
 
 set -e
@@ -38,4 +38,4 @@ fi
 
 source $thisdir/activate_env.sh "$envdir"
 pip install wheel setuptools
-pip install cython pytest coverage pytest-cov "$NUMPY" "$NIBABEL"
+pip install --prefer-binary cython pytest "$NUMPY" "$NIBABEL"

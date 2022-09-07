@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# benchmark.py - benchmark indexed_gzip
+# benchmark.py - benchmark indexed_gzip_fileobj_fork_epicfaace
 #
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
@@ -21,16 +21,14 @@ import            contextlib
 
 import numpy as np
 
-import indexed_gzip as igzip
+import indexed_gzip_fileobj_fork_epicfaace as igzip
 
 
 @contextlib.contextmanager
 def tempdir():
-
     testdir = tempfile.mkdtemp()
     prevdir = os.getcwd()
     try:
-
         os.chdir(testdir)
         yield testdir
 
@@ -40,14 +38,12 @@ def tempdir():
 
 
 def size(filename):
-
     with open(filename, 'rb') as f:
         f.seek(-1, 2)
         return f.tell()
 
 
 def gen_file(fname, nbytes):
-
     nelems = int(nbytes / 4)
 
     data = np.random.randint(0, 2 ** 32, nelems, dtype=np.uint32)
@@ -55,7 +51,7 @@ def gen_file(fname, nbytes):
     # zero out 10% so there is something to compress
     zeros = np.random.randint(0, nelems, int(nelems / 10.0))
     data[zeros] = 0
-    data = data.tostring()
+    data = data.tobytes()
 
     # write 1GB max at a time - the gzip
     # module doesn't like writing >= 4GB
@@ -69,18 +65,16 @@ def gen_file(fname, nbytes):
             outf.write(chunk)
 
 
-def benchmark_file(fobj, seeks, lens, update):
-
+def benchmark_file(fobj, chunksize, update):
     start   = time.time()
     hashobj = hashlib.md5()
 
-    for i, (s, l) in enumerate(zip(seeks, lens)):
-        fobj.seek(s)
-        data = fobj.read(l)
+    while True:
+        data = fobj.read(chunksize)
+        update(fobj.tell())
+        if not data:
+            break
         hashobj.update(data)
-        update(i)
-
-    update(len(seeks))
 
     end     = time.time()
     elapsed = end - start
@@ -88,40 +82,48 @@ def benchmark_file(fobj, seeks, lens, update):
     return str(hashobj.hexdigest()), elapsed
 
 
-def benchmark(filename, nseeks):
-
-    nbytes = size(filename)
-    seeks  = np.linspace(0, nbytes, nseeks, dtype=np.int)
-    lens   = np.random.randint(1048576, 16777216, nseeks)
-
-    np.random.shuffle(seeks)
-
+def benchmark(filename, uncompressed_size):
     names = [
         'GzipFile',
-        'IndexedGzipFile(drop_handles=True)',
-        'IndexedGzipFile(drop_handles=False)'
+        'IndexedGzipFile(drop_handles=True, spacing=0)',
+        'IndexedGzipFile(drop_handles=False, spacing=0)',
+        'IndexedGzipFile(drop_handles=True, spacing=32 MiB)',
+        'IndexedGzipFile(drop_handles=False, spacing=32 MiB)',
+        'IndexedGzipFile(drop_handles=True, spacing=32 MiB, readbuf_size=uncompressed_size)',
+        'IndexedGzipFile(drop_handles=False, spacing=32 MiB, readbuf_size=uncompressed_size)'
     ]
     namelen = max([len(n) for n in names])
-    namefmt = '{{:<{}s}}'.format(namelen)
+    namefmt = '{{:<{}s}}'.format(namelen + len( "Read 131072 KiB chunks" ))
 
     fobjs = [
         lambda : gzip.GzipFile(        filename, 'rb'),
-        lambda : igzip.IndexedGzipFile(filename, drop_handles=True),
-        lambda : igzip.IndexedGzipFile(filename, drop_handles=False),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=True, spacing=0),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=False, spacing=0),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=True, spacing=32 * 1024 * 1024),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=False, spacing=32 * 1024 * 1024),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=True, spacing=32 * 1024 * 1024, readbuf_size=uncompressed_size),
+        lambda : igzip.IndexedGzipFile(filename, drop_handles=False, spacing=32 * 1024 * 1024, readbuf_size=uncompressed_size),
     ]
 
+    firstMd5 = None
     for name, fobj in zip(names, fobjs):
+        for chunksize in [4 * 1024, 32 * 1024, 128 * 1024, 1024 * 1024, 32 * 1024 * 1024, uncompressed_size]:
+            def update(i):
+                label = f"Read {chunksize // 1024:6} KiB chunks from {namefmt.format(name)}"
+                print(f'\r{label} {100.0 * i / uncompressed_size:6.2f} %', end='')
+                sys.stdout.flush()
 
-        def update(i):
-            print('\r{} {:6.2f}%'.format(
-                namefmt.format(name),
-                100.0 * i / len(seeks)), end='')
-            sys.stdout.flush()
+            with fobj() as f:
+                md5, time = benchmark_file(f, chunksize, update)
 
-        with fobj() as f:
-            md5, time = benchmark_file(f, seeks, lens, update)
+            print(f'  {md5} {time:0.3f} s')
 
-        print('  {} {:0.0f}s'.format(md5, time))
+            if firstMd5 is None:
+                firstMd5 = md5
+            else:
+                assert firstMd5 == md5
+
+        print()
 
 
 if __name__ == '__main__':
@@ -133,12 +135,7 @@ if __name__ == '__main__':
                         type=int,
                         help='Uncompressed size of test file in bytes. '
                              'Ignored if a --file is specified',
-                        default=16777216)
-    parser.add_argument('-s',
-                        '--seeks',
-                        type=int,
-                        help='Number of random seeks',
-                        default=1000)
+                        default=128 * 1024 * 1024)
     parser.add_argument('-f',
                         '--file',
                         type=str,
@@ -159,18 +156,18 @@ if __name__ == '__main__':
     with tempdir():
         if namespace.file is None:
 
-            print('Generating test data ({:0.2f}MB)...'.format(
-                namespace.bytes / 1048576.), end='')
+            print('Generating test data ({:0.2f} MiB)...'.format(
+                namespace.bytes / (1024 * 1024)), end='')
             sys.stdout.flush()
 
             namespace.file = 'test.gz'
 
             gen_file(namespace.file, namespace.bytes)
 
-            print(' {:0.2f}MB compressed'.format(
-                size(namespace.file) / 1048576.0))
+            print(' {:0.2f} MiB compressed'.format(
+                size(namespace.file) / (1024 * 1024) ))
 
         if namespace.randomseed is not None:
             np.random.seed(namespace.seed)
 
-        benchmark(namespace.file, namespace.seeks)
+        benchmark(namespace.file, namespace.bytes)

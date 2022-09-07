@@ -5,6 +5,7 @@
 # Author: Paul McCarthy <pauldmccarthy@gmail.com>
 #
 
+import                    io
 import                    os
 import                    sys
 import                    time
@@ -67,13 +68,11 @@ def compress(infile, outfile, buflen=-1):
 
         with open(infile, 'rb') as inf:
             while True:
-                with gzip.open(outfile, 'a') as outf:
-                    data = inf.read(buflen)
-
-                    if len(data) == 0:
-                        break
-
-                    outf.write(data)
+                data = inf.read(buflen)
+                if len(data) == 0:
+                    break
+                with open(outfile, 'ab') as outf:
+                    gzip.GzipFile(fileobj=outf).write(data)
 
     def compress_with_gzip_command():
 
@@ -124,6 +123,37 @@ def compress(infile, outfile, buflen=-1):
     poll(lambda : not cmpThread.is_alive())
 
 
+def compress_inmem(data, concat):
+    """Compress the given data (assumed to be bytes) and return a bytearray
+    containing the compressed data (including gzip header and footer).
+    Also returns offsets for the end of each separate stream.
+    """
+
+    f = io.BytesIO()
+    if concat: chunksize = len(data) // 10
+    else:      chunksize = len(data)
+
+    offsets    = []
+    compressed = 0
+    print('Generating compressed data {}, concat: {})'.format(
+        len(data), concat))
+    while compressed < len(data):
+        start = len(f.getvalue())
+        chunk = data[compressed:compressed + chunksize]
+        with gzip.GzipFile(mode='ab', fileobj=f) as gzf:
+            gzf.write(chunk)
+
+        end = len(f.getvalue())
+
+        print('  Wrote stream to {} - {} [{} bytes] ...'.format(
+            start, end, end - start))
+        offsets.append(end)
+        compressed += chunksize
+
+    print('  Final size: {}'.format(len(f.getvalue())))
+
+    f.seek(0)
+    return bytearray(f.read()), offsets
 
 
 def gen_test_data(filename, nelems, concat):

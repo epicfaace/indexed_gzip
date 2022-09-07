@@ -33,7 +33,7 @@ from cpython.buffer cimport (PyObject_GetBuffer,
 
 from cpython.ref cimport PyObject
 
-cimport indexed_gzip.zran as zran
+cimport indexed_gzip_fileobj_fork_epicfaace.zran as zran
 
 import            io
 import            os
@@ -100,6 +100,10 @@ class IndexedGzipFile(io.BufferedReader):
         :arg auto_build:       If ``True`` (the default), the index is
                                automatically built on calls to :meth:`seek`.
 
+        :arg skip_crc_check:   Defaults to ``False``. If ``True``, CRC/size
+                               validation of the uncompressed data is not
+                               performed.
+
         :arg spacing:          Number of bytes between index seek points.
 
         :arg window_size:      Number of bytes of uncompressed data stored with
@@ -125,10 +129,22 @@ class IndexedGzipFile(io.BufferedReader):
         :arg buffer_size:      Optional, must be passed as a keyword argument.
                                Passed through to
                                ``io.BufferedReader.__init__``. If not provided,
-                               a default value of 1048576 is used.
+                               a default value of 4 * spacing is used if spacing
+                               is given else 4 MiB is used.
         """
 
-        buffer_size        = kwargs.pop('buffer_size', 1048576)
+        # Use 4x spacing because each raw read seeks from the last index point
+        # even if the position did not change since the last read call. On
+        # average, this incurs an overhead of spacing / 2. For 4x spacing, this
+        # overhead would be 1/8 = 12.5%, which should be negligible. The
+        # increased memory-usage is not an issue because internally many buffers
+        # are also allocated with 4 * spacing size.
+        # Note that setting the buffer_size too high might incur performance
+        # penalties for usecases with a lot of seeks and only small reads.
+        spacing = kwargs['spacing'] if ('spacing' in kwargs
+                  and kwargs['spacing'] > 0) else 1024 * 1024
+        buffer_size = kwargs.pop('buffer_size', max(4096, 4 * spacing))
+
         fobj               = _IndexedGzipFile(*args, **kwargs)
         self.__file_lock   = threading.RLock()
         self.__igz_fobj    = fobj
@@ -237,6 +253,12 @@ cdef class _IndexedGzipFile:
     """
 
 
+    cdef readonly bint skip_crc_check
+    """Flag which is set to ``True`` if CRC/size validation of uncompressed
+    data is disabled.
+    """
+
+
     cdef readonly object filename
     """String containing path of file being indexed. Used to release and
     reopen file handles between seeks and reads.
@@ -274,10 +296,12 @@ cdef class _IndexedGzipFile:
                  readbuf_size=1048576,
                  readall_buf_size=16777216,
                  drop_handles=True,
-                 index_file=None):
+                 index_file=None,
+                 skip_crc_check=False):
         """Create an ``_IndexedGzipFile``. The file may be specified either
         with an open file handle (``fileobj``), or with a ``filename``. If the
-        former, the file must have been opened in ``'rb'`` mode.
+        former, the file is assumed have been opened for reading in binary
+        mode.
 
         .. note:: The ``auto_build`` behaviour only takes place on calls to
                   :meth:`seek`.
@@ -290,6 +314,12 @@ cdef class _IndexedGzipFile:
 
         :arg auto_build:       If ``True`` (the default), the index is
                                automatically built on calls to :meth:`seek`.
+
+        :arg skip_crc_check:   Defaults to ``False``. If ``True``, CRC/size
+                               validation of the uncompressed data is not
+                               performed. Automatically enabled if an
+                               ``index_file`` is provided, or if
+                               :meth:`import_index` is called.
 
         :arg spacing:          Number of bytes between index seek points.
 
@@ -320,19 +350,20 @@ cdef class _IndexedGzipFile:
            (fileobj is not None and filename is not None):
             raise ValueError('One of fileobj or filename must be specified')
 
-        if fileobj is not None and getattr(fileobj, 'mode', 'rb') != 'rb':
-            raise ValueError('The gzip file must be opened in '
-                             'read-only binary ("rb") mode')
-
-        if (fileobj is None) and (mode not in (None, 'r', 'rb')):
-            raise ValueError('Invalid mode ({}), must be '
-                             '\'r\' or \'rb\''.format(mode))
-
         # filename can be either a
         # name or a file object
         if  hasattr(filename, 'read'):
             fileobj  = filename
             filename = None
+
+        if fileobj is not None and \
+           getattr(fileobj, 'mode', 'rb') not in (None, 'r', 'rb'):
+            raise ValueError('Invalid mode - fileobj must be opened '
+                             'in read-only binary ("rb") mode')
+
+        if (fileobj is None) and (mode not in (None, 'r', 'rb')):
+            raise ValueError('Invalid mode ({}), must be '
+                             '"r" or "rb"'.format(mode))
 
         # If __file_handle is called on a file
         # that doesn't exist, it passes the
@@ -366,13 +397,16 @@ cdef class _IndexedGzipFile:
         self.readbuf_size     = readbuf_size
         self.readall_buf_size = readall_buf_size
         self.auto_build       = auto_build
+        self.skip_crc_check   = skip_crc_check
         self.drop_handles     = drop_handles
         self.filename         = filename
         self.own_file         = own_file
         self.pyfid            = fileobj
 
-        if self.auto_build: flags = zran.ZRAN_AUTO_BUILD
-        else:               flags = 0
+        flags = 0
+
+        if auto_build:     flags |= zran.ZRAN_AUTO_BUILD
+        if skip_crc_check: flags |= zran.ZRAN_SKIP_CRC_CHECK
 
         # Set index.fd here just for the initial
         # call, as __file_handle may otherwise
@@ -386,7 +420,8 @@ cdef class _IndexedGzipFile:
                               window_size=window_size,
                               readbuf_size=readbuf_size,
                               flags=flags):
-                raise ZranError('zran_init returned error')
+                raise ZranError('zran_init returned error (file: '
+                                '{})'.format(self.errname))
 
         log.debug('%s.__init__(%s, %s, %s, %s, %s, %s, %s)',
                   type(self).__name__,
@@ -473,6 +508,20 @@ cdef class _IndexedGzipFile:
 
 
     @property
+    def errname(self):
+        """Used in exception messages. Returns the file name associated with
+        this ``_IndexedGzipFile``, or ``'n/a'`` if a file name cannot be
+        identified.
+        """
+        if self.filename is not None:
+            return self.filename
+        if self.pyfid is not None:
+            if getattr(self.pyfid, 'name', None) is not None:
+                return self.pyfid.name
+        return 'n/a'
+
+
+    @property
     def npoints(self):
         """Returns the number of index points that have been created. """
         return self.index.npoints
@@ -490,7 +539,8 @@ cdef class _IndexedGzipFile:
         """Closes this ``_IndexedGzipFile``. """
 
         if self.closed:
-            raise IOError('_IndexedGzipFile is already closed')
+            raise IOError('_IndexedGzipFile is already closed '
+                          '(file: {})'.format(self.errname))
 
         if   self.own_file and self.pyfid    is not None: self.pyfid.close()
         elif self.own_file and self.index.fd is not NULL: fclose(self.index.fd)
@@ -567,8 +617,9 @@ cdef class _IndexedGzipFile:
         with self.__file_handle():
             ret = zran.zran_build_index(&self.index, 0, 0)
 
-        if ret != 0:
-            raise ZranError('zran_build_index returned error')
+        if ret != zran.ZRAN_BUILD_INDEX_OK:
+            raise ZranError('zran_build_index returned error: {} (file: {})'
+                            .format(ZRAN_ERRORS.ZRAN_BUILD[ret], self.errname))
 
         log.debug('%s.build_full_index()', type(self).__name__)
 
@@ -602,10 +653,7 @@ cdef class _IndexedGzipFile:
         with self.__file_handle(), nogil:
             ret = zran.zran_seek(index, off, c_whence, NULL)
 
-        if ret < 0:
-            raise ZranError('zran_seek returned error: {}'.format(ret))
-
-        elif ret == zran.ZRAN_SEEK_NOT_COVERED:
+        if ret == zran.ZRAN_SEEK_NOT_COVERED:
             raise NotCoveredError('Index does not cover '
                                   'offset {}'.format(offset))
 
@@ -613,8 +661,14 @@ cdef class _IndexedGzipFile:
             raise NotCoveredError('Index must be completely built '
                                   'in order to seek from SEEK_END')
 
+        elif ret == zran.ZRAN_SEEK_CRC_ERROR:
+            raise CrcError('CRC/size validation failed - the '
+                           'GZIP data might be corrupt (file: '
+                           '{})'.format(self.errname))
+
         elif ret not in (zran.ZRAN_SEEK_OK, zran.ZRAN_SEEK_EOF):
-            raise ZranError('zran_seek returned unknown code: {}'.format(ret))
+            raise ZranError('zran_seek returned error: {} (file: {})'
+                            .format(ZRAN_ERRORS.ZRAN_SEEK[ret], self.errname))
 
         offset = self.tell()
 
@@ -657,10 +711,13 @@ cdef class _IndexedGzipFile:
                 with nogil:
                     ret = zran.zran_read(index, buffer, bufsz)
 
-                # see how the read went
-                if ret == zran.ZRAN_READ_FAIL:
-                    raise ZranError('zran_read returned error '
-                                    '({})'.format(ret))
+                # No bytes were read, and there are
+                # no more bytes to read. This will
+                # happen when the seek point was at
+                # or beyond EOF when zran_read was
+                # called
+                if ret == zran.ZRAN_READ_EOF:
+                    break
 
                 # This will happen if the current
                 # seek point is not covered by the
@@ -669,13 +726,19 @@ cdef class _IndexedGzipFile:
                     raise NotCoveredError('Index does not cover '
                                           'current offset')
 
-                # No bytes were read, and there are
-                # no more bytes to read. This will
-                # happen when the seek point was at
-                # or beyond EOF when zran_read was
-                # called
-                elif ret == zran.ZRAN_READ_EOF:
-                    break
+                # CRC or size check failed - data
+                # might be corrupt
+                elif ret == zran.ZRAN_READ_CRC_ERROR:
+                    raise CrcError('CRC/size validation failed - the '
+                                   'GZIP data might be corrupt (file: '
+                                   '{})'.format(self.errname))
+
+
+                # Unknown error
+                elif ret < 0:
+                    raise ZranError('zran_read returned error: {} (file: '
+                                    '{})'.format(ZRAN_ERRORS.ZRAN_READ[ret],
+                                                 self.errname))
 
                 nread  += ret
                 offset += ret
@@ -731,7 +794,8 @@ cdef class _IndexedGzipFile:
 
         # see how the read went
         if ret == zran.ZRAN_READ_FAIL:
-            raise ZranError('zran_read returned error ({})'.format(ret))
+            raise ZranError('zran_read returned error: {} (file: {})'
+                            .format(ZRAN_ERRORS.ZRAN_READ[ret], self.errname))
 
         # This will happen if the current
         # seek point is not covered by the
@@ -904,7 +968,9 @@ cdef class _IndexedGzipFile:
                 fd = NULL
             ret = zran.zran_export_index(&self.index, fd, <PyObject*>fileobj)
             if ret != zran.ZRAN_EXPORT_OK:
-                raise ZranError('export_index returned error: {}'.format(ret))
+                raise ZranError('export_index returned error: {} (file: '
+                                '{})'.format(ZRAN_ERRORS.ZRAN_EXPORT[ret],
+                                             self.errname))
 
         finally:
             if close_file:
@@ -952,7 +1018,11 @@ cdef class _IndexedGzipFile:
                 fd = NULL
             ret = zran.zran_import_index(&self.index, fd, <PyObject*>fileobj)
             if ret != zran.ZRAN_IMPORT_OK:
-                raise ZranError('import_index returned error: {}'.format(ret))
+                raise ZranError('import_index returned error: {} (file: '
+                                '{})'.format(ZRAN_ERRORS.ZRAN_IMPORT[ret],
+                                             self.errname))
+
+            self.skip_crc_check = True
 
         finally:
             if close_file:
@@ -1052,8 +1122,50 @@ class ZranError(IOError):
     pass
 
 
+class CrcError(OSError):
+    """Exception raised by the :class:`_IndexedGzipFile` when a CRC/size
+    validation check fails, which suggests that the GZIP data might be
+    corrupt.
+    """
+    pass
+
+
 class NoHandleError(ValueError):
     """Exception raised by the :class:`_IndexedGzipFile` when
     ``drop_handles is True`` and an attempt is made to access the underlying
     file object.
     """
+
+
+class ZRAN_ERRORS(object):
+    """Contains text versions of all error codes emitted by zran.c. """
+    ZRAN_BUILD = {
+        zran.ZRAN_BUILD_INDEX_FAIL      : 'ZRAN_BUILD_INDEX_FAIL',
+        zran.ZRAN_BUILD_INDEX_CRC_ERROR : 'ZRAN_BUILD_INDEX_CRC_ERROR'
+    }
+    ZRAN_SEEK = {
+        zran.ZRAN_SEEK_CRC_ERROR       : 'ZRAN_SEEK_CRC_ERROR',
+        zran.ZRAN_SEEK_FAIL            : 'ZRAN_SEEK_FAIL',
+        zran.ZRAN_SEEK_NOT_COVERED     : 'ZRAN_SEEK_NOT_COVERED',
+        zran.ZRAN_SEEK_EOF             : 'ZRAN_SEEK_EOF',
+        zran.ZRAN_SEEK_INDEX_NOT_BUILT : 'ZRAN_SEEK_INDEX_NOT_BUILT'
+    }
+    ZRAN_READ = {
+        zran.ZRAN_READ_NOT_COVERED : 'ZRAN_READ_NOT_COVERED',
+        zran.ZRAN_READ_EOF         : 'ZRAN_READ_EOF',
+        zran.ZRAN_READ_FAIL        : 'ZRAN_READ_FAIL',
+        zran.ZRAN_READ_CRC_ERROR   : 'ZRAN_READ_CRC_ERROR'
+    }
+    ZRAN_EXPORT = {
+        zran.ZRAN_EXPORT_WRITE_ERROR : 'ZRAN_EXPORT_WRITE_ERROR'
+    }
+    ZRAN_IMPORT = {
+        zran.ZRAN_IMPORT_OK                  : 'ZRAN_IMPORT_OK',
+        zran.ZRAN_IMPORT_FAIL                : 'ZRAN_IMPORT_FAIL',
+        zran.ZRAN_IMPORT_EOF                 : 'ZRAN_IMPORT_EOF',
+        zran.ZRAN_IMPORT_READ_ERROR          : 'ZRAN_IMPORT_READ_ERROR',
+        zran.ZRAN_IMPORT_INCONSISTENT        : 'ZRAN_IMPORT_INCONSISTENT',
+        zran.ZRAN_IMPORT_MEMORY_ERROR        : 'ZRAN_IMPORT_MEMORY_ERROR',
+        zran.ZRAN_IMPORT_UNKNOWN_FORMAT      : 'ZRAN_IMPORT_UNKNOWN_FORMAT',
+        zran.ZRAN_IMPORT_UNSUPPORTED_VERSION : 'ZRAN_IMPORT_UNSUPPORTED_VERSION'
+    }
