@@ -286,14 +286,7 @@ int _seekable_python2(PyObject *f) {
  * Calls ferror on fd if specified, otherwise the Python-specific method on f.
  */
 int ferror_(FILE *fd, PyObject *f) {
-    // return fd != NULL ? ferror(fd) : _ferror_python(f);
-    if(fd != NULL){
-        zran_log("In Ferror, go to fd. fd here is %u, f here is %u\n", fd, f);
-        return ferror(fd);
-    }else{
-        zran_log("In Ferror, go to f. fd here is %u, f here is %u\n", fd, f);
-        return _ferror_python(f);
-    }
+    return fd != NULL ? ferror(fd) : _ferror_python(f);
 }
 
 /*
