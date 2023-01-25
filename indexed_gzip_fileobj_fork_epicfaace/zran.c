@@ -1589,7 +1589,7 @@ static int _zran_inflate(zran_index_t *index,
      * return_val/error_return_val is
      * the return value for this function.
      */
-    int z_ret;
+    int z_ret = -100;
     int off;
     int return_val       = ZRAN_INFLATE_OK;
     int error_return_val = ZRAN_INFLATE_ERROR;
